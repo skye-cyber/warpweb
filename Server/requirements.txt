@@ -9,7 +9,7 @@ python-dotenv==1.0.0
 websockets==12.0
 
 # CORS Middleware
-python-multipart==0.0.6
+python-multipart==0.0.22
 
 # File Operations
 aiofiles==23.2.1
@@ -24,7 +24,7 @@ psutil==5.9.6
 # They should be installed along with filewarp or specified here
 
 # Image Processing
-Pillow==10.1.0
+Pillow==12.1.1
 opencv-python==4.8.1.78
 
 # Audio Processing
@@ -50,7 +50,7 @@ markdown==3.5.1
 pytest==7.4.3
 pytest-asyncio==0.21.1
 httpx==0.25.1
-black==23.11.0
+black==24.3.0
 isort==5.12.0
 flake8==6.1.0
 mypy==1.7.0
