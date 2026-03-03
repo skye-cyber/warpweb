@@ -14,7 +14,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import App from './App';
 import store from './store';
 import './styles/global.css';
-// import './styles/normalize.css';
+import './styles/aos.css'
 
 /**
  * Main Application Component with all providers
@@ -49,7 +49,7 @@ const Root = () => {
             },
             background: {
                 default: '#f5f5f5',
-                    paper: '#ffffff',
+                paper: '#ffffff',
             },
             error: {
                 main: '#d32f2f',

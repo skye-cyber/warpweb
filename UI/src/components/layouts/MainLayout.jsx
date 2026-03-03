@@ -103,7 +103,7 @@ const MainLayout = ({ children }) => {
     }, [isDraggingEditor, isDraggingRight]);
 
     return (
-        <div ref={containerRef} className='block w-screen h-screen bg-white dark:bg-blend-900 transition-color duration-500'>
+        <div ref={containerRef} className='block w-screen h-screen bg-white dark:bg-secondary-800 transition-color duration-500'>
             {/* Top NavBar */}
             <NavbarTop />
 

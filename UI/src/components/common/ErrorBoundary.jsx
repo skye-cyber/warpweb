@@ -10,6 +10,7 @@
 import React, { Component } from 'react';
 import { Box, Typography, Button, Paper } from '@mui/material';
 import { Warning, Refresh } from '@mui/icons-material';
+import { useTheme } from '@emotion/react';
 
 /**
  * Error Boundary Component

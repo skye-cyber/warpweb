@@ -1,3 +1,5 @@
+import { DocumentTool } from "./DocumentTools/Tool"
+
 export const AvailableTools = {
     // Document Tools
     convert_doc: {
@@ -142,6 +144,17 @@ export const AvailableTools = {
     }
 }
 
+export const InterfaceComponentMap = {
+    documents: DocumentTool,
+    videos: null,
+    audios: null,
+    images: null,
+}
+
+export function getComponentById(id){
+    console.log(id, InterfaceComponentMap[id])
+    return InterfaceComponentMap[id]
+}
 
 export function getToolsByCategory(category = "documents") {
     const keys = Object.keys(AvailableTools)

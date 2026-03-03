@@ -50,6 +50,8 @@ const App = () => {
             mirror: true,
             duration: 700,
             startEvent: 'DOMContentLoaded',
+            disable: true,
+            triggerEvent:'onscroll'
         });
         setTimeout(() => {
             AOS.refresh();
@@ -134,12 +136,12 @@ const App = () => {
     if (!isInitialized) {
         return (
             <Box
+            className={`bg-${theme.palette.background.default} dark:bg-primary-900`}
                 sx={{
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                     height: '100vh',
-                    backgroundColor: theme.palette.background.default
                 }}
             >
                 <CircularProgress
