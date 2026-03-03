@@ -1,0 +1,64 @@
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+
+# WebSocket Support
+websockets==12.0
+
+# CORS Middleware
+python-multipart==0.0.6
+
+# File Operations
+aiofiles==23.2.1
+python-magic==0.4.27
+humanize==4.9.0
+
+# System Monitoring
+psutil==5.9.6
+
+# FileWarp Dependencies
+# Note: These are the dependencies required by FileWarp itself
+# They should be installed along with filewarp or specified here
+
+# Image Processing
+Pillow==10.1.0
+opencv-python==4.8.1.78
+
+# Audio Processing
+pydub==0.25.1
+soundfile==0.12.1
+
+# Video Processing
+moviepy==1.0.3
+
+# PDF Processing
+PyPDF2==3.0.1
+pdf2image==1.16.3
+pdfplumber==0.10.3
+
+# OCR
+pytesseract==0.3.10
+
+# Document Conversion
+python-docx==1.1.0
+markdown==3.5.1
+
+# Development Tools
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.1
+black==23.11.0
+isort==5.12.0
+flake8==6.1.0
+mypy==1.7.0
+
+# Optional: Database support (if needed)
+# sqlalchemy==2.0.23
+# alembic==1.12.1
+# asyncpg==0.29.0
+
+# Optional: Redis for caching (if needed)
+# redis==5.0.1

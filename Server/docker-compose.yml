@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  filewarp-backend:
+    build: .
+    container_name: filewarp-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./filewarp:/app/filewarp  # Mount FileWarp if not in Python path
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=false
+      - RELOAD=false
+      - WORKERS=4
+      - UPLOAD_DIR=/app/uploads
+      - OUTPUT_DIR=/app/outputs
+      - LOG_DIR=/app/logs
+      - TASK_STORAGE_PATH=/app/data/tasks
+      - LOG_LEVEL=INFO
+      - MAX_CONCURRENT_TASKS=10
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - filewarp-network
+
+  # Optional: Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: filewarp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - filewarp-network
+    profiles:
+      - with-redis
+
+  # Optional: PostgreSQL for task persistence
+  postgres:
+    image: postgres:15-alpine
+    container_name: filewarp-postgres
+    environment:
+      - POSTGRES_USER=filewarp
+      - POSTGRES_PASSWORD=filewarp
+      - POSTGRES_DB=filewarp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - filewarp-network
+    profiles:
+      - with-postgres
+
+volumes:
+  redis-data:
+  postgres-data:
+
+networks:
+  filewarp-network:
+    driver: bridge
