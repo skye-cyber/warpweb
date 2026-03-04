@@ -1,15 +1,16 @@
 from fastapi import WebSocket, WebSocketDisconnect
 from typing import Dict, Set, Optional, Any
 import asyncio
-import json
 import logging
 from datetime import datetime
 from enum import Enum
 
 logger = logging.getLogger(__name__)
 
+
 class WebSocketMessageType(str, Enum):
     """WebSocket message types"""
+
     PROGRESS_UPDATE = "progress_update"
     TASK_COMPLETED = "task_completed"
     TASK_FAILED = "task_failed"
@@ -33,7 +34,9 @@ class WebSocketManager:
         self.ping_interval = 30  # seconds
         self._ping_task = None
 
-    async def connect(self, websocket: WebSocket, task_id: str, client_id: Optional[str] = None):
+    async def connect(
+        self, websocket: WebSocket, task_id: str, client_id: Optional[str] = None
+    ):
         """
         Accept and register a WebSocket connection
         """
@@ -47,20 +50,23 @@ class WebSocketManager:
 
             self.active_connections[task_id].add(websocket)
             self.connection_info[id(websocket)] = {
-                'task_id': task_id,
-                'client_id': client_id,
-                'connected_at': datetime.now(),
-                'last_ping': datetime.now(),
-                'last_pong': datetime.now()
+                "task_id": task_id,
+                "client_id": client_id,
+                "connected_at": datetime.now(),
+                "last_ping": datetime.now(),
+                "last_pong": datetime.now(),
             }
 
         # Send connection confirmation
-        await self.send_message(websocket, {
-            'type': WebSocketMessageType.CONNECTED,
-            'task_id': task_id,
-            'client_id': client_id,
-            'timestamp': datetime.now().isoformat()
-        })
+        await self.send_message(
+            websocket,
+            {
+                "type": WebSocketMessageType.CONNECTED,
+                "task_id": task_id,
+                "client_id": client_id,
+                "timestamp": datetime.now().isoformat(),
+            },
+        )
 
         logger.info(f"WebSocket connected for task {task_id} (client: {client_id})")
 
@@ -73,7 +79,7 @@ class WebSocketManager:
         async with self._lock:
             # Find which task this connection belongs to
             if task_id is None and conn_id in self.connection_info:
-                task_id = self.connection_info[conn_id].get('task_id')
+                task_id = self.connection_info[conn_id].get("task_id")
 
             if task_id and task_id in self.active_connections:
                 self.active_connections[task_id].discard(websocket)
@@ -84,8 +90,10 @@ class WebSocketManager:
 
             # Remove connection info
             if conn_id in self.connection_info:
-                client_id = self.connection_info[conn_id].get('client_id', 'unknown')
-                logger.info(f"WebSocket disconnected for task {task_id} (client: {client_id})")
+                client_id = self.connection_info[conn_id].get("client_id", "unknown")
+                logger.info(
+                    f"WebSocket disconnected for task {task_id} (client: {client_id})"
+                )
                 del self.connection_info[conn_id]
 
         try:
@@ -128,66 +136,86 @@ class WebSocketManager:
             # Find and remove this connection
             conn_id = id(websocket)
             if conn_id in self.connection_info:
-                task_id = self.connection_info[conn_id].get('task_id')
+                task_id = self.connection_info[conn_id].get("task_id")
                 await self.disconnect(websocket, task_id)
 
-    async def send_progress_update(self, task_id: str, progress: int, message: str,
-                                   metadata: Optional[Dict[str, Any]] = None):
+    async def send_progress_update(
+        self,
+        task_id: str,
+        progress: int,
+        message: str,
+        metadata: Optional[Dict[str, Any]] = None,
+    ):
         """
         Send progress update to all connections for a task
         """
-        await self.broadcast_to_task(task_id, {
-            'type': WebSocketMessageType.PROGRESS_UPDATE,
-            'task_id': task_id,
-            'progress': progress,
-            'message': message,
-            'metadata': metadata or {},
-            'timestamp': datetime.now().isoformat()
-        })
+        await self.broadcast_to_task(
+            task_id,
+            {
+                "type": WebSocketMessageType.PROGRESS_UPDATE,
+                "task_id": task_id,
+                "progress": progress,
+                "message": message,
+                "metadata": metadata or {},
+                "timestamp": datetime.now().isoformat(),
+            },
+        )
 
     async def send_task_completed(self, task_id: str, result: Any):
         """
         Send task completion notification
         """
-        await self.broadcast_to_task(task_id, {
-            'type': WebSocketMessageType.TASK_COMPLETED,
-            'task_id': task_id,
-            'result': result,
-            'timestamp': datetime.now().isoformat()
-        })
+        await self.broadcast_to_task(
+            task_id,
+            {
+                "type": WebSocketMessageType.TASK_COMPLETED,
+                "task_id": task_id,
+                "result": result,
+                "timestamp": datetime.now().isoformat(),
+            },
+        )
 
     async def send_task_failed(self, task_id: str, error: str):
         """
         Send task failure notification
         """
-        await self.broadcast_to_task(task_id, {
-            'type': WebSocketMessageType.TASK_FAILED,
-            'task_id': task_id,
-            'error': error,
-            'timestamp': datetime.now().isoformat()
-        })
+        await self.broadcast_to_task(
+            task_id,
+            {
+                "type": WebSocketMessageType.TASK_FAILED,
+                "task_id": task_id,
+                "error": error,
+                "timestamp": datetime.now().isoformat(),
+            },
+        )
 
     async def send_task_cancelled(self, task_id: str):
         """
         Send task cancelled notification
         """
-        await self.broadcast_to_task(task_id, {
-            'type': WebSocketMessageType.TASK_CANCELLED,
-            'task_id': task_id,
-            'timestamp': datetime.now().isoformat()
-        })
+        await self.broadcast_to_task(
+            task_id,
+            {
+                "type": WebSocketMessageType.TASK_CANCELLED,
+                "task_id": task_id,
+                "timestamp": datetime.now().isoformat(),
+            },
+        )
 
     async def send_log_message(self, task_id: str, level: str, message: str):
         """
         Send log message to all connections for a task
         """
-        await self.broadcast_to_task(task_id, {
-            'type': WebSocketMessageType.LOG_MESSAGE,
-            'task_id': task_id,
-            'level': level,
-            'message': message,
-            'timestamp': datetime.now().isoformat()
-        })
+        await self.broadcast_to_task(
+            task_id,
+            {
+                "type": WebSocketMessageType.LOG_MESSAGE,
+                "task_id": task_id,
+                "level": level,
+                "message": message,
+                "timestamp": datetime.now().isoformat(),
+            },
+        )
 
     async def handle_client_messages(self, websocket: WebSocket, task_id: str):
         """
@@ -198,17 +226,20 @@ class WebSocketManager:
                 message = await websocket.receive_json()
 
                 # Update last pong time for ping messages
-                if message.get('type') == WebSocketMessageType.PONG:
+                if message.get("type") == WebSocketMessageType.PONG:
                     conn_id = id(websocket)
                     if conn_id in self.connection_info:
-                        self.connection_info[conn_id]['last_pong'] = datetime.now()
+                        self.connection_info[conn_id]["last_pong"] = datetime.now()
 
                 # Handle other message types as needed
-                elif message.get('type') == WebSocketMessageType.PING:
-                    await self.send_message(websocket, {
-                        'type': WebSocketMessageType.PONG,
-                        'timestamp': datetime.now().isoformat()
-                    })
+                elif message.get("type") == WebSocketMessageType.PING:
+                    await self.send_message(
+                        websocket,
+                        {
+                            "type": WebSocketMessageType.PONG,
+                            "timestamp": datetime.now().isoformat(),
+                        },
+                    )
 
                 else:
                     logger.debug(f"Received message from task {task_id}: {message}")
@@ -232,7 +263,9 @@ class WebSocketManager:
 
                 for conn_id, info in self.connection_info.items():
                     # Check if connection is stale (no pong in 3 intervals)
-                    if (now - info['last_pong']).total_seconds() > self.ping_interval * 3:
+                    if (
+                        now - info["last_pong"]
+                    ).total_seconds() > self.ping_interval * 3:
                         logger.warning(f"Connection {conn_id} is stale, removing")
                         to_remove.append(conn_id)
 
@@ -240,7 +273,7 @@ class WebSocketManager:
                 for conn_id in to_remove:
                     info = self.connection_info.get(conn_id)
                     if info:
-                        task_id = info.get('task_id')
+                        task_id = info.get("task_id")
                         # Find and remove the actual websocket
                         for ws in list(self.active_connections.get(task_id, set())):
                             if id(ws) == conn_id:
@@ -266,13 +299,21 @@ class WebSocketManager:
         conn_list = []
 
         for conn_id, info in self.connection_info.items():
-            if info.get('task_id') == task_id:
-                conn_list.append({
-                    'client_id': info.get('client_id'),
-                    'connected_at': info.get('connected_at').isoformat() if info.get('connected_at') else None,
-                    'last_ping': info.get('last_ping').isoformat() if info.get('last_ping') else None,
-                    'last_pong': info.get('last_pong').isoformat() if info.get('last_pong') else None
-                })
+            if info.get("task_id") == task_id:
+                conn_list.append(
+                    {
+                        "client_id": info.get("client_id"),
+                        "connected_at": info.get("connected_at").isoformat()
+                        if info.get("connected_at")
+                        else None,
+                        "last_ping": info.get("last_ping").isoformat()
+                        if info.get("last_ping")
+                        else None,
+                        "last_pong": info.get("last_pong").isoformat()
+                        if info.get("last_pong")
+                        else None,
+                    }
+                )
 
         return conn_list
 

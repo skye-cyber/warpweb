@@ -1,13 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks
-from typing import List, Optional, Dict, Any
+from typing import Optional
 import logging
 from pathlib import Path
 
-from ...models.requests import (
-    ConversionRequest, ConversionType,
-    VideoAnalysisRequest
-)
-from ...models.responses import TaskResponse, OperationResult
+from ...models.requests import ConversionRequest, ConversionType, VideoAnalysisRequest
+from ...models.responses import TaskResponse
 from ...models.tasks import TaskPriority
 from ...services.conversion_service import ConversionService
 from ...services.progress_service import ProgressService
@@ -20,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/video", tags=["video"])
 
+
 @router.post("/convert", response_model=TaskResponse)
 async def convert_video(
     request: ConversionRequest,
@@ -28,36 +26,36 @@ async def convert_video(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Convert video files between formats
     """
     try:
         # Validate operation
-        if request.operation not in [ConversionType.CONVERT_VIDEO, ConversionType.CONVERT_VIDEO_ALT]:
+        if request.operation not in [
+            ConversionType.CONVERT_VIDEO,
+            ConversionType.CONVERT_VIDEO_ALT,
+        ]:
             raise HTTPException(
-                status_code=400,
-                detail="Invalid operation for video conversion"
+                status_code=400, detail="Invalid operation for video conversion"
             )
 
         # Validate input files
         invalid_files = conversion_service.validate_input_files(
-            request.input_paths,
-            request.operation.value
+            request.input_paths, request.operation.value
         )
 
         if invalid_files:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid input files: {', '.join(invalid_files)}"
+                detail=f"Invalid input files: {', '.join(invalid_files)}",
             )
 
         # Validate target format
         if not request.target_format:
             raise HTTPException(
-                status_code=400,
-                detail="Target format required for video conversion"
+                status_code=400, detail="Target format required for video conversion"
             )
 
         # Submit task
@@ -65,11 +63,11 @@ async def convert_video(
 
         # Create progress tracker
         file_info = file_handler.get_file_info(request.input_paths[0])
-        total_steps = int(file_info['size'] / (1024 * 1024)) * 2  # 2 steps per MB
+        total_steps = int(file_info["size"] / (1024 * 1024)) * 2  # 2 steps per MB
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=max(100, total_steps),
-            description=f"Converting video to {request.target_format}"
+            description=f"Converting video to {request.target_format}",
         )
         tracker.start()
 
@@ -82,7 +80,7 @@ async def convert_video(
             task_id=task_id,
             status="pending",
             message=f"Converting video to {request.target_format}",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -100,7 +98,7 @@ async def analyze_video(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Analyze video properties and metadata
@@ -111,9 +109,9 @@ async def analyze_video(
             operation=ConversionType.ANALYZE_VIDEO,
             input_paths=[request.video_path],
             options={
-                'analyze_audio': request.analyze_audio,
-                'extract_metadata': request.extract_metadata
-            }
+                "analyze_audio": request.analyze_audio,
+                "extract_metadata": request.extract_metadata,
+            },
         )
 
         # Submit task
@@ -121,9 +119,7 @@ async def analyze_video(
 
         # Create progress tracker
         tracker = progress_service.create_tracker(
-            task_id,
-            total_steps=100,
-            description="Analyzing video"
+            task_id, total_steps=100, description="Analyzing video"
         )
         tracker.start()
 
@@ -136,7 +132,7 @@ async def analyze_video(
             task_id=task_id,
             status="pending",
             message="Analyzing video",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -157,7 +153,7 @@ async def extract_frames(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Extract frames from a video
@@ -165,19 +161,23 @@ async def extract_frames(
     try:
         # Validate video file
         video_ext = Path(video_path).suffix.lower()
-        valid_video_extensions = ['.mp4', '.avi', '.mkv', '.mov', '.flv', '.wmv', '.webm']
+        valid_video_extensions = [
+            ".mp4",
+            ".avi",
+            ".mkv",
+            ".mov",
+            ".flv",
+            ".wmv",
+            ".webm",
+        ]
 
         if video_ext not in valid_video_extensions:
             raise HTTPException(
-                status_code=400,
-                detail=f"Unsupported video format: {video_ext}"
+                status_code=400, detail=f"Unsupported video format: {video_ext}"
             )
 
         # Create conversion request
-        options = {
-            'frame_rate': frame_rate,
-            'format': format
-        }
+        options = {"frame_rate": frame_rate, "format": format}
 
         # For frame extraction, we might need a custom operation
         # Using CONVERT_VIDEO with special options for now
@@ -186,7 +186,7 @@ async def extract_frames(
             input_paths=[video_path],
             output_path=output_dir,
             target_format=format,
-            options=options
+            options=options,
         )
 
         # Submit task
@@ -194,11 +194,13 @@ async def extract_frames(
 
         # Create progress tracker
         file_info = file_handler.get_file_info(video_path)
-        estimated_frames = int(file_info['duration'] if 'duration' in file_info else 60) * frame_rate
+        estimated_frames = (
+            int(file_info["duration"] if "duration" in file_info else 60) * frame_rate
+        )
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=estimated_frames,
-            description=f"Extracting frames at {frame_rate} fps"
+            description=f"Extracting frames at {frame_rate} fps",
         )
         tracker.start()
 
@@ -212,7 +214,7 @@ async def extract_frames(
             task_id=task_id,
             status="pending",
             message=f"Extracting frames at {frame_rate} fps",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -225,15 +227,19 @@ async def extract_frames(
 @router.post("/compress", response_model=TaskResponse)
 async def compress_video(
     video_path: str,
-    target_size: Optional[str] = Query(None, description="Target size (e.g., '100MB', '50%')"),
-    quality: Optional[int] = Query(23, description="Quality (0-51, lower is better)", ge=0, le=51),
+    target_size: Optional[str] = Query(
+        None, description="Target size (e.g., '100MB', '50%')"
+    ),
+    quality: Optional[int] = Query(
+        23, description="Quality (0-51, lower is better)", ge=0, le=51
+    ),
     output_path: Optional[str] = None,
     background_tasks: BackgroundTasks = None,
     priority: TaskPriority = Query(TaskPriority.MEDIUM, description="Task priority"),
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Compress a video file
@@ -241,26 +247,24 @@ async def compress_video(
     try:
         # Validate video file
         video_ext = Path(video_path).suffix.lower()
-        valid_video_extensions = ['.mp4', '.avi', '.mkv', '.mov', '.webm']
+        valid_video_extensions = [".mp4", ".avi", ".mkv", ".mov", ".webm"]
 
         if video_ext not in valid_video_extensions:
             raise HTTPException(
                 status_code=400,
-                detail=f"Unsupported video format for compression: {video_ext}"
+                detail=f"Unsupported video format for compression: {video_ext}",
             )
 
-        options = {
-            'quality': quality
-        }
+        options = {"quality": quality}
         if target_size:
-            options['target_size'] = target_size
+            options["target_size"] = target_size
 
         conv_request = ConversionRequest(
             operation=ConversionType.CONVERT_VIDEO,
             input_paths=[video_path],
             output_path=output_path,
             target_format=video_ext[1:],  # Keep same format
-            options=options
+            options=options,
         )
 
         # Submit task
@@ -268,11 +272,9 @@ async def compress_video(
 
         # Create progress tracker
         file_info = file_handler.get_file_info(video_path)
-        total_steps = int(file_info['size'] / (1024 * 1024)) * 3
+        total_steps = int(file_info["size"] / (1024 * 1024)) * 3
         tracker = progress_service.create_tracker(
-            task_id,
-            total_steps=max(100, total_steps),
-            description="Compressing video"
+            task_id, total_steps=max(100, total_steps), description="Compressing video"
         )
         tracker.start()
 
@@ -285,7 +287,7 @@ async def compress_video(
             task_id=task_id,
             status="pending",
             message="Compressing video",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -301,16 +303,16 @@ async def get_video_formats():
     Get supported video formats
     """
     return {
-        'input': ['.mp4', '.avi', '.mkv', '.mov', '.flv', '.wmv', '.webm'],
-        'output': ['.mp4', '.avi', '.mkv', '.mov', '.webm', '.gif'],
-        'codecs': {
-            'mp4': 'mpeg4',
-            'avi': 'rawvideo',
-            'webm': 'libvpx',
-            'mov': 'mpeg4',
-            'mkv': 'mpeg4',
-            'flv': 'flv'
-        }
+        "input": [".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv", ".webm"],
+        "output": [".mp4", ".avi", ".mkv", ".mov", ".webm", ".gif"],
+        "codecs": {
+            "mp4": "mpeg4",
+            "avi": "rawvideo",
+            "webm": "libvpx",
+            "mov": "mpeg4",
+            "mkv": "mpeg4",
+            "flv": "flv",
+        },
     }
 
 

@@ -1,19 +1,19 @@
-import React, { useRef, useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import { AvailableTools, getToolsByCategory, InterfaceComponentMap, getComponentById } from "../Tools/schema";
+import { TOOLS as alltools, getToolsByCategory, InterfaceComponentMap } from "../../config/ToolSchema";
 import { setActiveTab, setActiveTool } from "../../store/warpSlice";
 import { toTitleCase } from "../../utils/extendJS";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, MargicTool } from "../svg/core";
-import { DocumentTool } from "../Tools/DocumentTools/Tool";
+import { DocumentTool } from "../Tools/DocumentTools/DocumentTool";
 
 export const Converter = ({ }) => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const { activeTool, ui } = useSelector((state) => state.warp);
     const [Tools, setTools] = React.useState(null)
-    const availableToolRef = useRef()
-    const InterfaceComponent = useRef(null)
+    const availableToolRef = React.useRef()
+    const InterfaceComponent = React.useRef(null)
 
     React.useEffect(() => {
         if (ui.activeTab === 'dashboard') return navigate('/dashboard');
@@ -94,9 +94,9 @@ export const Converter = ({ }) => {
                     </div>
                     <div className="flex flex-wrap sm:block space-y-0 sm:space-y-2 mt-2">
                         {Tools &&
-                            Object.keys(Tools).map((toolkey, key) => {
+                            Object.keys(alltools).map((toolkey, key) => {
                                 const delay = 100 * key
-                                return <ToolButton key={key} tool={AvailableTools[toolkey]} aosdelay={delay} />
+                                return <ToolButton key={key} tool={Tools[toolkey]} aosdelay={delay} />
                             })}
                     </div>
                 </div>

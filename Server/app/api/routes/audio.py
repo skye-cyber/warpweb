@@ -1,14 +1,18 @@
-from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks, UploadFile, File
-from typing import List, Optional, Dict, Any
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Depends,
+    Query,
+    BackgroundTasks,
+    # UploadFile,
+    # File,
+)
+from typing import Optional, Dict, Any
 import logging
-import os
 from pathlib import Path
 
-from ...models.requests import (
-    ConversionRequest, ConversionType,
-    AudioJoinRequest
-)
-from ...models.responses import TaskResponse, OperationResult
+from ...models.requests import ConversionRequest, ConversionType, AudioJoinRequest
+from ...models.responses import TaskResponse
 from ...models.tasks import TaskPriority
 from ...services.conversion_service import ConversionService
 from ...services.progress_service import ProgressService
@@ -21,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/audio", tags=["audio"])
 
+
 @router.post("/convert", response_model=TaskResponse)
 async def convert_audio(
     request: ConversionRequest,
@@ -29,29 +34,30 @@ async def convert_audio(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Convert audio files between formats
     """
     try:
         # Validate operation
-        if request.operation not in [ConversionType.CONVERT_AUDIO, ConversionType.CONVERT_AUDIO_ALT]:
+        if request.operation not in [
+            ConversionType.CONVERT_AUDIO,
+            ConversionType.CONVERT_AUDIO_ALT,
+        ]:
             raise HTTPException(
-                status_code=400,
-                detail="Invalid operation for audio conversion"
+                status_code=400, detail="Invalid operation for audio conversion"
             )
 
         # Validate input files
         invalid_files = conversion_service.validate_input_files(
-            request.input_paths,
-            request.operation.value
+            request.input_paths, request.operation.value
         )
 
         if invalid_files:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid input files: {', '.join(invalid_files)}"
+                detail=f"Invalid input files: {', '.join(invalid_files)}",
             )
 
         # Submit task
@@ -61,7 +67,7 @@ async def convert_audio(
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=100,
-            description=f"Converting audio to {request.target_format}"
+            description=f"Converting audio to {request.target_format}",
         )
         tracker.start()
 
@@ -74,7 +80,7 @@ async def convert_audio(
             task_id=task_id,
             status="pending",
             message=f"Converting audio to {request.target_format}",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -94,7 +100,7 @@ async def extract_audio_from_video(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Extract audio from a video file
@@ -102,12 +108,19 @@ async def extract_audio_from_video(
     try:
         # Validate video file
         video_ext = Path(video_path).suffix.lower()
-        valid_video_extensions = ['.mp4', '.avi', '.mkv', '.mov', '.flv', '.wmv', '.webm']
+        valid_video_extensions = [
+            ".mp4",
+            ".avi",
+            ".mkv",
+            ".mov",
+            ".flv",
+            ".wmv",
+            ".webm",
+        ]
 
         if video_ext not in valid_video_extensions:
             raise HTTPException(
-                status_code=400,
-                detail=f"Unsupported video format: {video_ext}"
+                status_code=400, detail=f"Unsupported video format: {video_ext}"
             )
 
         # Create conversion request
@@ -115,7 +128,7 @@ async def extract_audio_from_video(
             operation=ConversionType.EXTRACT_AUDIO,
             input_paths=[video_path],
             target_format=output_format,
-            output_path=output_path
+            output_path=output_path,
         )
 
         # Submit task
@@ -123,9 +136,7 @@ async def extract_audio_from_video(
 
         # Create progress tracker
         tracker = progress_service.create_tracker(
-            task_id,
-            total_steps=100,
-            description=f"Extracting audio to {output_format}"
+            task_id, total_steps=100, description=f"Extracting audio to {output_format}"
         )
         tracker.start()
 
@@ -139,7 +150,7 @@ async def extract_audio_from_video(
             task_id=task_id,
             status="pending",
             message=f"Extracting audio to {output_format}",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -157,7 +168,7 @@ async def join_audio_files(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Join multiple audio files into one
@@ -166,15 +177,14 @@ async def join_audio_files(
         # Validate at least 2 files
         if len(request.input_paths) < 2:
             raise HTTPException(
-                status_code=400,
-                detail="At least 2 audio files required for joining"
+                status_code=400, detail="At least 2 audio files required for joining"
             )
 
         # Create conversion request
         conv_request = ConversionRequest(
             operation=ConversionType.JOIN_AUDIO,
             input_paths=request.input_paths,
-            output_path=request.output_path
+            output_path=request.output_path,
         )
 
         # Submit task
@@ -184,7 +194,7 @@ async def join_audio_files(
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=len(request.input_paths) * 10,
-            description=f"Joining {len(request.input_paths)} audio files"
+            description=f"Joining {len(request.input_paths)} audio files",
         )
         tracker.start()
 
@@ -197,7 +207,7 @@ async def join_audio_files(
             task_id=task_id,
             status="pending",
             message=f"Joining {len(request.input_paths)} audio files",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -217,7 +227,7 @@ async def record_audio(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Record audio from microphone
@@ -226,14 +236,14 @@ async def record_audio(
         # Create conversion request
         options = {}
         if duration:
-            options['duration'] = duration
+            options["duration"] = duration
 
         conv_request = ConversionRequest(
             operation=ConversionType.RECORD,
             input_paths=[],
             target_format=output_format,
             output_path=output_path,
-            options=options
+            options=options,
         )
 
         # Submit task
@@ -242,9 +252,7 @@ async def record_audio(
         # Create progress tracker
         total_steps = duration if duration else 100
         tracker = progress_service.create_tracker(
-            task_id,
-            total_steps=total_steps,
-            description="Recording audio"
+            task_id, total_steps=total_steps, description="Recording audio"
         )
         tracker.start()
 
@@ -258,7 +266,7 @@ async def record_audio(
             task_id=task_id,
             status="pending",
             message="Recording audio",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except Exception as e:
@@ -276,7 +284,7 @@ async def apply_audio_effects(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Apply effects to an audio file
@@ -284,12 +292,11 @@ async def apply_audio_effects(
     try:
         # Validate audio file
         audio_ext = Path(audio_path).suffix.lower()
-        valid_audio_extensions = ['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac']
+        valid_audio_extensions = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"]
 
         if audio_ext not in valid_audio_extensions:
             raise HTTPException(
-                status_code=400,
-                detail=f"Unsupported audio format: {audio_ext}"
+                status_code=400, detail=f"Unsupported audio format: {audio_ext}"
             )
 
         # Create conversion request
@@ -297,7 +304,7 @@ async def apply_audio_effects(
             operation=ConversionType.AUDIO_EFFECTS,
             input_paths=[audio_path],
             output_path=output_path,
-            options={'effects': effects}
+            options={"effects": effects},
         )
 
         # Submit task
@@ -305,9 +312,7 @@ async def apply_audio_effects(
 
         # Create progress tracker
         tracker = progress_service.create_tracker(
-            task_id,
-            total_steps=100,
-            description="Applying audio effects"
+            task_id, total_steps=100, description="Applying audio effects"
         )
         tracker.start()
 
@@ -321,7 +326,7 @@ async def apply_audio_effects(
             task_id=task_id,
             status="pending",
             message="Applying audio effects",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -337,9 +342,9 @@ async def get_audio_formats():
     Get supported audio formats
     """
     return {
-        'input': ['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac', '.wma'],
-        'output': ['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac'],
-        'extractable_from': ['.mp4', '.avi', '.mkv', '.mov', '.flv', '.wmv', '.webm']
+        "input": [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"],
+        "output": [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"],
+        "extractable_from": [".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv", ".webm"],
     }
 
 

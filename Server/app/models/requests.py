@@ -1,35 +1,16 @@
-from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from enum import Enum
+from pydantic import BaseModel, Field, validator
+from pathlib import Path
+import os
 
-class ConversionType_(str, Enum):
-    DOCUMENT = "convert-doc"
-    AUDIO = "convert-audio"
-    VIDEO = "convert-video"
-    IMAGE = "convert-image"
-    PDF_JOIN = "pdf-join"
-    EXTRACT_PAGES = "extract-pages"
-    OCR = "ocr"
-    # ... other types
-
-class ConversionRequest_(BaseModel):
-    operation: ConversionType_
-    input_paths: List[str] = Field(..., description="Input file/directory paths")
-    output_path: Optional[str] = Field(None, description="Output path (auto-generated if not provided)")
-    target_format: Optional[str] = Field(None, description="Target format for conversion")
-    options: Dict[str, Any] = Field(default_factory=dict, description="Operation-specific options")
-
-    # Common options
-    threads: Optional[int] = 3
-    no_resume: Optional[bool] = False
-    isolate: Optional[str] = None
-    use_extras: Optional[bool] = False
 
 class TaskResponse(BaseModel):
     task_id: str
     status: str
     message: str
     created_at: str
+
 
 class OperationResult(BaseModel):
     success: bool
@@ -38,17 +19,9 @@ class OperationResult(BaseModel):
     metadata: Optional[Dict[str, Any]]
 
 
-
-# ======
-from pydantic import BaseModel, Field, validator
-from typing import Optional, List, Dict, Any, Union
-from enum import Enum
-from pathlib import Path
-import os
-
-
 class ConversionType(str, Enum):
     """All supported conversion operations"""
+
     # Document operations
     CONVERT_DOC = "convert-doc"
     CONVERT_DOC_ALT = "convert_doc"
@@ -122,19 +95,32 @@ class ConversionType(str, Enum):
 
 class ConversionRequest(BaseModel):
     """Base request model for all conversion operations"""
+
     operation: ConversionType
-    input_paths: List[str] = Field(..., description="Input file/directory paths", min_items=1)
-    output_path: Optional[str] = Field(None, description="Output path (auto-generated if not provided)")
-    target_format: Optional[str] = Field(None, description="Target format for conversion")
+    input_paths: List[str] = Field(
+        ..., description="Input file/directory paths", min_items=1
+    )
+    output_path: Optional[str] = Field(
+        None, description="Output path (auto-generated if not provided)"
+    )
+    target_format: Optional[str] = Field(
+        None, description="Target format for conversion"
+    )
 
     # Common options
-    threads: Optional[int] = Field(3, description="Number of threads to use", ge=1, le=10)
-    no_resume: Optional[bool] = Field(False, description="Don't resume previous operation")
+    threads: Optional[int] = Field(
+        3, description="Number of threads to use", ge=1, le=10
+    )
+    no_resume: Optional[bool] = Field(
+        False, description="Don't resume previous operation"
+    )
 
     # Operation-specific options (will be validated in respective handlers)
-    options: Dict[str, Any] = Field(default_factory=dict, description="Operation-specific options")
+    options: Dict[str, Any] = Field(
+        default_factory=dict, description="Operation-specific options"
+    )
 
-    @validator('input_paths')
+    @validator("input_paths")
     def validate_input_paths(cls, v):
         """Validate that input paths exist"""
         for path in v:
@@ -149,38 +135,36 @@ class ConversionRequest(BaseModel):
                 "input_paths": ["/home/user/document.docx"],
                 "target_format": "pdf",
                 "threads": 3,
-                "options": {
-                    "use_extras": False,
-                    "isolate": None
-                }
+                "options": {"use_extras": False, "isolate": None},
             }
         }
 
 
 class DocumentConversionRequest(ConversionRequest):
     """Document-specific conversion request"""
-    options: Dict[str, Any] = Field(default_factory=lambda: {
-        "use_extras": False,
-        "isolate": None
-    })
+
+    options: Dict[str, Any] = Field(
+        default_factory=lambda: {"use_extras": False, "isolate": None}
+    )
 
 
 class AudioConversionRequest(ConversionRequest):
     """Audio-specific conversion request"""
-    options: Dict[str, Any] = Field(default_factory=lambda: {
-        "bitrate": None,
-        "sample_rate": None
-    })
+
+    options: Dict[str, Any] = Field(
+        default_factory=lambda: {"bitrate": None, "sample_rate": None}
+    )
 
 
 class AudioJoinRequest(BaseModel):
     """Request model for joining audio files"""
+
     input_paths: List[str] = Field(..., description="Audio files to join", min_items=2)
     output_path: Optional[str] = None
 
-    @validator('input_paths')
+    @validator("input_paths")
     def validate_audio_files(cls, v):
-        valid_extensions = ['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac']
+        valid_extensions = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"]
         for path in v:
             if not os.path.exists(path):
                 raise ValueError(f"File does not exist: {path}")
@@ -192,15 +176,16 @@ class AudioJoinRequest(BaseModel):
 
 class VideoAnalysisRequest(BaseModel):
     """Request model for video analysis"""
+
     video_path: str = Field(..., description="Path to video file")
     analyze_audio: Optional[bool] = Field(False, description="Include audio analysis")
     extract_metadata: Optional[bool] = Field(True, description="Extract metadata")
 
-    @validator('video_path')
+    @validator("video_path")
     def validate_video(cls, v):
         if not os.path.exists(v):
             raise ValueError(f"Video file does not exist: {v}")
-        valid_extensions = ['.mp4', '.avi', '.mkv', '.mov', '.flv', '.wmv', '.webm']
+        valid_extensions = [".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv", ".webm"]
         ext = Path(v).suffix.lower()
         if ext not in valid_extensions:
             raise ValueError(f"Unsupported video format: {ext}")
@@ -209,19 +194,23 @@ class VideoAnalysisRequest(BaseModel):
 
 class ImageResizeRequest(BaseModel):
     """Request model for image resizing"""
+
     image_path: str = Field(..., description="Path to image file")
-    target_size: str = Field(..., description="Target size (e.g., '2mb', '800x600', '50%')")
+    target_size: str = Field(
+        ..., description="Target size (e.g., '2mb', '800x600', '50%')"
+    )
     output_format: Optional[str] = Field(None, description="Output format")
     output_path: Optional[str] = None
 
-    @validator('target_size')
+    @validator("target_size")
     def validate_target_size(cls, v):
         import re
+
         # Pattern for: 2mb, 800x600, 50%, 1024x768
         patterns = [
-            r'^\d+(\.\d+)?\s*(mb|kb|gb)$',  # Size with unit
-            r'^\d+\s*x\s*\d+$',              # Dimensions
-            r'^\d+(\.\d+)?%$'                 # Percentage
+            r"^\d+(\.\d+)?\s*(mb|kb|gb)$",  # Size with unit
+            r"^\d+\s*x\s*\d+$",  # Dimensions
+            r"^\d+(\.\d+)?%$",  # Percentage
         ]
         if not any(re.match(p, v.lower()) for p in patterns):
             raise ValueError(f"Invalid size format: {v}. Use format: 2mb, 800x600, 50%")
@@ -230,27 +219,29 @@ class ImageResizeRequest(BaseModel):
 
 class PDFJoinRequest(BaseModel):
     """Request model for joining PDFs"""
+
     pdf_paths: List[str] = Field(..., description="PDF files to join", min_items=2)
     output_path: Optional[str] = None
     order: Optional[str] = Field("AAB", description="Page order pattern")
 
-    @validator('pdf_paths')
+    @validator("pdf_paths")
     def validate_pdfs(cls, v):
         for path in v:
             if not os.path.exists(path):
                 raise ValueError(f"PDF does not exist: {path}")
-            if not path.lower().endswith('.pdf'):
+            if not path.lower().endswith(".pdf"):
                 raise ValueError(f"Not a PDF file: {path}")
         return v
 
 
 class PageExtractionRequest(BaseModel):
     """Request model for extracting pages from PDF"""
+
     pdf_path: str = Field(..., description="Path to PDF file")
     pages: List[int] = Field(..., description="Page numbers to extract", min_items=1)
     output_path: Optional[str] = None
 
-    @validator('pages')
+    @validator("pages")
     def validate_pages(cls, v):
         for page in v:
             if page < 1:
@@ -260,14 +251,15 @@ class PageExtractionRequest(BaseModel):
 
 class OCRRequest(BaseModel):
     """Request model for OCR operations"""
+
     image_paths: List[str] = Field(..., description="Images to process", min_items=1)
     language: Optional[str] = Field("eng", description="OCR language")
     separator: Optional[str] = Field("\n", description="Text separator")
     output_path: Optional[str] = None
 
-    @validator('image_paths')
+    @validator("image_paths")
     def validate_images(cls, v):
-        valid_extensions = ['.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif']
+        valid_extensions = [".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".gif"]
         for path in v:
             if not os.path.exists(path):
                 raise ValueError(f"Image does not exist: {path}")
@@ -279,15 +271,16 @@ class OCRRequest(BaseModel):
 
 class TextToWordRequest(BaseModel):
     """Request model for text to Word conversion"""
+
     text_path: str = Field(..., description="Path to text file")
     font_size: Optional[int] = Field(12, description="Font size", ge=8, le=72)
     font_name: Optional[str] = Field("Times New Roman", description="Font name")
     output_path: Optional[str] = None
 
-    @validator('text_path')
+    @validator("text_path")
     def validate_text_file(cls, v):
         if not os.path.exists(v):
             raise ValueError(f"Text file does not exist: {v}")
-        if not v.lower().endswith('.txt'):
+        if not v.lower().endswith(".txt"):
             raise ValueError(f"Not a text file: {v}")
         return v

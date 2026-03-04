@@ -1,13 +1,15 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 import logging
 from pathlib import Path
 
 from ...models.requests import (
-    ConversionRequest, ConversionType,
-    ImageResizeRequest, OCRRequest
+    ConversionRequest,
+    ConversionType,
+    ImageResizeRequest,
+    OCRRequest,
 )
-from ...models.responses import TaskResponse, OperationResult
+from ...models.responses import TaskResponse
 from ...models.tasks import TaskPriority
 from ...services.conversion_service import ConversionService
 from ...services.progress_service import ProgressService
@@ -20,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/image", tags=["image"])
 
+
 @router.post("/convert", response_model=TaskResponse)
 async def convert_image(
     request: ConversionRequest,
@@ -28,36 +31,36 @@ async def convert_image(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Convert images between formats
     """
     try:
         # Validate operation
-        if request.operation not in [ConversionType.CONVERT_IMAGE, ConversionType.CONVERT_IMAGE_ALT]:
+        if request.operation not in [
+            ConversionType.CONVERT_IMAGE,
+            ConversionType.CONVERT_IMAGE_ALT,
+        ]:
             raise HTTPException(
-                status_code=400,
-                detail="Invalid operation for image conversion"
+                status_code=400, detail="Invalid operation for image conversion"
             )
 
         # Validate input files
         invalid_files = conversion_service.validate_input_files(
-            request.input_paths,
-            request.operation.value
+            request.input_paths, request.operation.value
         )
 
         if invalid_files:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid input files: {', '.join(invalid_files)}"
+                detail=f"Invalid input files: {', '.join(invalid_files)}",
             )
 
         # Validate target format
         if not request.target_format:
             raise HTTPException(
-                status_code=400,
-                detail="Target format required for image conversion"
+                status_code=400, detail="Target format required for image conversion"
             )
 
         # Submit task
@@ -67,7 +70,7 @@ async def convert_image(
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=len(request.input_paths) * 5,
-            description=f"Converting images to {request.target_format}"
+            description=f"Converting images to {request.target_format}",
         )
         tracker.start()
 
@@ -80,7 +83,7 @@ async def convert_image(
             task_id=task_id,
             status="pending",
             message=f"Converting {len(request.input_paths)} images to {request.target_format}",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -98,23 +101,21 @@ async def resize_image(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Resize or compress an image
     """
     try:
         # Create conversion request
-        options = {
-            'target_size': request.target_size
-        }
+        options = {"target_size": request.target_size}
 
         conv_request = ConversionRequest(
             operation=ConversionType.RESIZE_IMAGE,
             input_paths=[request.image_path],
             output_path=request.output_path,
             target_format=request.output_format,
-            options=options
+            options=options,
         )
 
         # Submit task
@@ -124,7 +125,7 @@ async def resize_image(
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=100,
-            description=f"Resizing image to {request.target_size}"
+            description=f"Resizing image to {request.target_size}",
         )
         tracker.start()
 
@@ -137,7 +138,7 @@ async def resize_image(
             task_id=task_id,
             status="pending",
             message=f"Resizing image to {request.target_size}",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -158,14 +159,14 @@ async def images_to_pdf(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Convert multiple images to a single PDF
     """
     try:
         # Validate image files
-        valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp']
+        valid_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp"]
         invalid_files = []
 
         for path in image_paths:
@@ -176,21 +177,17 @@ async def images_to_pdf(
 
         if invalid_files:
             raise HTTPException(
-                status_code=400,
-                detail=f"Invalid files: {', '.join(invalid_files)}"
+                status_code=400, detail=f"Invalid files: {', '.join(invalid_files)}"
             )
 
         # Create conversion request
-        options = {
-            'sort': sort,
-            'walk': walk
-        }
+        options = {"sort": sort, "walk": walk}
 
         conv_request = ConversionRequest(
             operation=ConversionType.IMAGES_TO_PDF,
             input_paths=image_paths,
             output_path=output_path,
-            options=options
+            options=options,
         )
 
         # Submit task
@@ -200,7 +197,7 @@ async def images_to_pdf(
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=len(image_paths) * 2,
-            description=f"Converting {len(image_paths)} images to PDF"
+            description=f"Converting {len(image_paths)} images to PDF",
         )
         tracker.start()
 
@@ -214,7 +211,7 @@ async def images_to_pdf(
             task_id=task_id,
             status="pending",
             message=f"Converting {len(image_paths)} images to PDF",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -233,14 +230,14 @@ async def images_to_word(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Convert multiple images to a Word document
     """
     try:
         # Validate image files
-        valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff']
+        valid_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff"]
         invalid_files = []
 
         for path in image_paths:
@@ -251,15 +248,14 @@ async def images_to_word(
 
         if invalid_files:
             raise HTTPException(
-                status_code=400,
-                detail=f"Invalid files: {', '.join(invalid_files)}"
+                status_code=400, detail=f"Invalid files: {', '.join(invalid_files)}"
             )
 
         # Create conversion request
         conv_request = ConversionRequest(
             operation=ConversionType.IMAGES_TO_WORD,
             input_paths=image_paths,
-            output_path=output_path
+            output_path=output_path,
         )
 
         # Submit task
@@ -269,7 +265,7 @@ async def images_to_word(
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=len(image_paths) * 3,
-            description=f"Converting {len(image_paths)} images to Word"
+            description=f"Converting {len(image_paths)} images to Word",
         )
         tracker.start()
 
@@ -283,7 +279,7 @@ async def images_to_word(
             task_id=task_id,
             status="pending",
             message=f"Converting {len(image_paths)} images to Word",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -302,7 +298,7 @@ async def images_to_grayscale(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Convert images to grayscale
@@ -312,7 +308,7 @@ async def images_to_grayscale(
         conv_request = ConversionRequest(
             operation=ConversionType.IMAGES_TO_GRAY,
             input_paths=image_paths,
-            output_path=output_dir
+            output_path=output_dir,
         )
 
         # Submit task
@@ -322,7 +318,7 @@ async def images_to_grayscale(
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=len(image_paths) * 2,
-            description=f"Converting {len(image_paths)} images to grayscale"
+            description=f"Converting {len(image_paths)} images to grayscale",
         )
         tracker.start()
 
@@ -336,7 +332,7 @@ async def images_to_grayscale(
             task_id=task_id,
             status="pending",
             message=f"Converting {len(image_paths)} images to grayscale",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -354,7 +350,7 @@ async def perform_ocr(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Extract text from images using OCR
@@ -368,21 +364,17 @@ async def perform_ocr(
 
         if invalid_files:
             raise HTTPException(
-                status_code=400,
-                detail=f"Invalid files: {', '.join(invalid_files)}"
+                status_code=400, detail=f"Invalid files: {', '.join(invalid_files)}"
             )
 
         # Create conversion request
-        options = {
-            'language': request.language,
-            'separator': request.separator
-        }
+        options = {"language": request.language, "separator": request.separator}
 
         conv_request = ConversionRequest(
             operation=ConversionType.OCR,
             input_paths=request.image_paths,
             output_path=request.output_path,
-            options=options
+            options=options,
         )
 
         # Submit task
@@ -392,7 +384,7 @@ async def perform_ocr(
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=len(request.image_paths) * 10,
-            description=f"Performing OCR on {len(request.image_paths)} images"
+            description=f"Performing OCR on {len(request.image_paths)} images",
         )
         tracker.start()
 
@@ -405,7 +397,7 @@ async def perform_ocr(
             task_id=task_id,
             status="pending",
             message=f"Performing OCR on {len(request.image_paths)} images",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -421,9 +413,9 @@ async def get_image_formats():
     Get supported image formats
     """
     return {
-        'input': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.svg'],
-        'output': ['.jpg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.pdf'],
-        'ocr_supported': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff']
+        "input": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp", ".svg"],
+        "output": [".jpg", ".png", ".gif", ".bmp", ".tiff", ".webp", ".pdf"],
+        "ocr_supported": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff"],
     }
 
 

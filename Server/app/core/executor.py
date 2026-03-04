@@ -1,14 +1,14 @@
 import threading
-import time
+import logging
 import traceback
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime
-import logging
 
 from .interpreter import OperationInterpreter
 from ..models.tasks import TaskModel, TaskStatus
 
 logger = logging.getLogger(__name__)
+
 
 class OperationExecutor:
     """
@@ -20,7 +20,9 @@ class OperationExecutor:
         self.active_tasks = {}
         self._lock = threading.Lock()
 
-    def execute(self, task: TaskModel, progress_callback: Optional[Callable] = None) -> Dict[str, Any]:
+    def execute(
+        self, task: TaskModel, progress_callback: Optional[Callable] = None
+    ) -> Dict[str, Any]:
         """
         Execute a task and return the result
         """
@@ -66,6 +68,7 @@ class OperationExecutor:
         """
         Execute a task asynchronously in a separate thread
         """
+
         def _execute_wrapper():
             try:
                 with self._lock:

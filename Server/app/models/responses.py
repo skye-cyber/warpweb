@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any, Union
-from datetime import datetime
+from typing import Optional, List, Dict, Any
 from enum import Enum
 
 
@@ -14,6 +13,7 @@ class TaskStatus(str, Enum):
 
 class TaskResponse(BaseModel):
     """Response model for task submission"""
+
     task_id: str
     status: TaskStatus
     message: str
@@ -25,13 +25,14 @@ class TaskResponse(BaseModel):
                 "task_id": "123e4567-e89b-12d3-a456-426614174000",
                 "status": "pending",
                 "message": "Task submitted successfully",
-                "created_at": "2024-01-15T10:30:00"
+                "created_at": "2024-01-15T10:30:00",
             }
         }
 
 
 class TaskStatusResponse(BaseModel):
     """Response model for task status queries"""
+
     task_id: str
     status: TaskStatus
     progress: int = Field(..., ge=0, le=100)
@@ -52,13 +53,14 @@ class TaskStatusResponse(BaseModel):
                 "message": "Processing page 5 of 10",
                 "logs": ["[10:30:05] Started processing", "[10:30:10] Page 1 complete"],
                 "created_at": "2024-01-15T10:30:00",
-                "started_at": "2024-01-15T10:30:01"
+                "started_at": "2024-01-15T10:30:01",
             }
         }
 
 
 class OperationResult(BaseModel):
     """Response model for operation results"""
+
     success: bool
     message: str
     output_path: Optional[str] = None
@@ -71,13 +73,14 @@ class OperationResult(BaseModel):
                 "success": True,
                 "message": "Conversion completed successfully",
                 "output_path": "/outputs/20240115/document_converted.pdf",
-                "execution_time": 3.45
+                "execution_time": 3.45,
             }
         }
 
 
 class FileInfoResponse(BaseModel):
     """Response model for file information"""
+
     name: str
     path: str
     size: int
@@ -97,13 +100,14 @@ class FileInfoResponse(BaseModel):
                 "modified": "2024-01-15T10:30:00",
                 "extension": ".pdf",
                 "exists": True,
-                "is_directory": False
+                "is_directory": False,
             }
         }
 
 
 class FormatInfoResponse(BaseModel):
     """Response model for format information"""
+
     input_formats: List[str]
     output_formats: List[str]
     examples: List[Dict[str, str]]
@@ -113,15 +117,14 @@ class FormatInfoResponse(BaseModel):
             "example": {
                 "input_formats": [".pdf", ".docx", ".txt"],
                 "output_formats": [".pdf", ".docx", ".txt", ".jpg"],
-                "examples": [
-                    {"input": "document.docx", "output": "document.pdf"}
-                ]
+                "examples": [{"input": "document.docx", "output": "document.pdf"}],
             }
         }
 
 
 class SystemInfoResponse(BaseModel):
     """Response model for system information"""
+
     version: str
     api_version: str
     uptime: str
@@ -144,14 +147,15 @@ class SystemInfoResponse(BaseModel):
                 "system_info": {
                     "cpu_count": 8,
                     "memory_total": "16 GB",
-                    "disk_free": "50 GB"
-                }
+                    "disk_free": "50 GB",
+                },
             }
         }
 
 
 class ErrorResponse(BaseModel):
     """Response model for errors"""
+
     error: str
     detail: Optional[str] = None
     status_code: int
@@ -165,13 +169,14 @@ class ErrorResponse(BaseModel):
                 "detail": "/path/to/file.pdf does not exist",
                 "status_code": 404,
                 "timestamp": "2024-01-15T10:30:00",
-                "path": "/api/v1/conversion/submit"
+                "path": "/api/v1/conversion/submit",
             }
         }
 
 
 class ValidationErrorResponse(BaseModel):
     """Response model for validation errors"""
+
     errors: List[Dict[str, str]]
     status_code: int = 422
     timestamp: str
@@ -181,9 +186,9 @@ class ValidationErrorResponse(BaseModel):
             "example": {
                 "errors": [
                     {"field": "input_paths", "message": "Path does not exist"},
-                    {"field": "target_format", "message": "Required field"}
+                    {"field": "target_format", "message": "Required field"},
                 ],
                 "status_code": 422,
-                "timestamp": "2024-01-15T10:30:00"
+                "timestamp": "2024-01-15T10:30:00",
             }
         }

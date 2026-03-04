@@ -6,8 +6,10 @@ from enum import Enum
 
 logger = logging.getLogger(__name__)
 
+
 class NotificationType(str, Enum):
     """Types of notifications"""
+
     TASK_STARTED = "task_started"
     TASK_PROGRESS = "task_progress"
     TASK_COMPLETED = "task_completed"
@@ -21,6 +23,7 @@ class NotificationType(str, Enum):
 
 class NotificationPriority(str, Enum):
     """Priority levels for notifications"""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -30,13 +33,15 @@ class NotificationPriority(str, Enum):
 class Notification:
     """Notification model"""
 
-    def __init__(self,
-                 notification_type: NotificationType,
-                 title: str,
-                 message: str,
-                 priority: NotificationPriority = NotificationPriority.MEDIUM,
-                 task_id: Optional[str] = None,
-                 metadata: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        notification_type: NotificationType,
+        title: str,
+        message: str,
+        priority: NotificationPriority = NotificationPriority.MEDIUM,
+        task_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ):
 
         self.id = f"notif_{datetime.now().timestamp()}"
         self.type = notification_type
@@ -58,17 +63,21 @@ class NotificationService:
     def __init__(self):
         self.notifications: Dict[str, Notification] = {}
         self.subscribers: Dict[str, List[Callable]] = {}
-        self.user_notifications: Dict[str, List[str]] = {}  # user_id -> list of notification_ids
+        self.user_notifications: Dict[
+            str, List[str]
+        ] = {}  # user_id -> list of notification_ids
         self._lock = asyncio.Lock()
 
-    async def create_notification(self,
-                                  notification_type: NotificationType,
-                                  title: str,
-                                  message: str,
-                                  priority: NotificationPriority = NotificationPriority.MEDIUM,
-                                  task_id: Optional[str] = None,
-                                  user_id: Optional[str] = None,
-                                  metadata: Optional[Dict[str, Any]] = None) -> str:
+    async def create_notification(
+        self,
+        notification_type: NotificationType,
+        title: str,
+        message: str,
+        priority: NotificationPriority = NotificationPriority.MEDIUM,
+        task_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> str:
         """
         Create a new notification
         """
@@ -78,7 +87,7 @@ class NotificationService:
             message=message,
             priority=priority,
             task_id=task_id,
-            metadata=metadata
+            metadata=metadata,
         )
 
         async with self._lock:
@@ -96,7 +105,9 @@ class NotificationService:
 
         return notification.id
 
-    async def notify_task_started(self, task_id: str, operation: str, user_id: Optional[str] = None):
+    async def notify_task_started(
+        self, task_id: str, operation: str, user_id: Optional[str] = None
+    ):
         """Create task started notification"""
         await self.create_notification(
             notification_type=NotificationType.TASK_STARTED,
@@ -104,11 +115,12 @@ class NotificationService:
             message=f"Task {task_id} has started processing",
             task_id=task_id,
             user_id=user_id,
-            metadata={'operation': operation}
+            metadata={"operation": operation},
         )
 
-    async def notify_task_progress(self, task_id: str, progress: int, message: str,
-                                   user_id: Optional[str] = None):
+    async def notify_task_progress(
+        self, task_id: str, progress: int, message: str, user_id: Optional[str] = None
+    ):
         """Create task progress notification (for significant milestones)"""
         if progress in [25, 50, 75, 100]:
             await self.create_notification(
@@ -118,10 +130,12 @@ class NotificationService:
                 priority=NotificationPriority.LOW,
                 task_id=task_id,
                 user_id=user_id,
-                metadata={'progress': progress}
+                metadata={"progress": progress},
             )
 
-    async def notify_task_completed(self, task_id: str, result: Any, user_id: Optional[str] = None):
+    async def notify_task_completed(
+        self, task_id: str, result: Any, user_id: Optional[str] = None
+    ):
         """Create task completed notification"""
         await self.create_notification(
             notification_type=NotificationType.TASK_COMPLETED,
@@ -130,10 +144,12 @@ class NotificationService:
             priority=NotificationPriority.HIGH,
             task_id=task_id,
             user_id=user_id,
-            metadata={'result': result}
+            metadata={"result": result},
         )
 
-    async def notify_task_failed(self, task_id: str, error: str, user_id: Optional[str] = None):
+    async def notify_task_failed(
+        self, task_id: str, error: str, user_id: Optional[str] = None
+    ):
         """Create task failed notification"""
         await self.create_notification(
             notification_type=NotificationType.TASK_FAILED,
@@ -142,7 +158,7 @@ class NotificationService:
             priority=NotificationPriority.CRITICAL,
             task_id=task_id,
             user_id=user_id,
-            metadata={'error': error}
+            metadata={"error": error},
         )
 
     async def notify_task_cancelled(self, task_id: str, user_id: Optional[str] = None):
@@ -153,7 +169,7 @@ class NotificationService:
             message=f"Task {task_id} was cancelled",
             priority=NotificationPriority.MEDIUM,
             task_id=task_id,
-            user_id=user_id
+            user_id=user_id,
         )
 
     async def notify_system_error(self, error: str, user_id: Optional[str] = None):
@@ -164,11 +180,12 @@ class NotificationService:
             message=error,
             priority=NotificationPriority.CRITICAL,
             user_id=user_id,
-            metadata={'error': error}
+            metadata={"error": error},
         )
 
-    async def get_user_notifications(self, user_id: str, unread_only: bool = False,
-                                     limit: int = 50) -> List[Dict[str, Any]]:
+    async def get_user_notifications(
+        self, user_id: str, unread_only: bool = False, limit: int = 50
+    ) -> List[Dict[str, Any]]:
         """
         Get notifications for a user
         """
@@ -180,19 +197,21 @@ class NotificationService:
             for nid in notification_ids:
                 notification = self.notifications.get(nid)
                 if notification and (not unread_only or not notification.read):
-                    result.append({
-                        'id': notification.id,
-                        'type': notification.type.value,
-                        'title': notification.title,
-                        'message': notification.message,
-                        'priority': notification.priority.value,
-                        'task_id': notification.task_id,
-                        'created_at': notification.created_at.isoformat(),
-                        'read': notification.read,
-                        'metadata': notification.metadata
-                    })
+                    result.append(
+                        {
+                            "id": notification.id,
+                            "type": notification.type.value,
+                            "title": notification.title,
+                            "message": notification.message,
+                            "priority": notification.priority.value,
+                            "task_id": notification.task_id,
+                            "created_at": notification.created_at.isoformat(),
+                            "read": notification.read,
+                            "metadata": notification.metadata,
+                        }
+                    )
 
-        return sorted(result, key=lambda x: x['created_at'], reverse=True)
+        return sorted(result, key=lambda x: x["created_at"], reverse=True)
 
     async def mark_as_read(self, notification_id: str, user_id: str) -> bool:
         """
@@ -201,7 +220,10 @@ class NotificationService:
         async with self._lock:
             if notification_id in self.notifications:
                 # Verify ownership
-                if user_id in self.user_notifications and notification_id in self.user_notifications[user_id]:
+                if (
+                    user_id in self.user_notifications
+                    and notification_id in self.user_notifications[user_id]
+                ):
                     self.notifications[notification_id].read = True
                     return True
         return False
@@ -226,7 +248,10 @@ class NotificationService:
         Delete a notification
         """
         async with self._lock:
-            if user_id in self.user_notifications and notification_id in self.user_notifications[user_id]:
+            if (
+                user_id in self.user_notifications
+                and notification_id in self.user_notifications[user_id]
+            ):
                 self.user_notifications[user_id].remove(notification_id)
 
                 if notification_id in self.notifications:
@@ -255,15 +280,19 @@ class NotificationService:
 
         return count
 
-    def subscribe(self, callback: Callable, notification_types: Optional[List[NotificationType]] = None):
+    def subscribe(
+        self,
+        callback: Callable,
+        notification_types: Optional[List[NotificationType]] = None,
+    ):
         """
         Subscribe to notifications
         """
         subscriber_id = f"sub_{datetime.now().timestamp()}"
 
         self.subscribers[subscriber_id] = {
-            'callback': callback,
-            'types': notification_types or list(NotificationType)
+            "callback": callback,
+            "types": notification_types or list(NotificationType),
         }
 
         return subscriber_id
@@ -280,9 +309,9 @@ class NotificationService:
         Notify all subscribers of a new notification
         """
         for subscriber in self.subscribers.values():
-            if notification.type in subscriber['types']:
+            if notification.type in subscriber["types"]:
                 try:
-                    await subscriber['callback'](notification)
+                    await subscriber["callback"](notification)
                 except Exception as e:
                     logger.error(f"Error notifying subscriber: {e}")
 
@@ -298,8 +327,8 @@ class NotificationService:
             by_type[n.type.value] = by_type.get(n.type.value, 0) + 1
 
         return {
-            'total': total,
-            'unread': unread,
-            'by_type': by_type,
-            'users_with_notifications': len(self.user_notifications)
+            "total": total,
+            "unread": unread,
+            "by_type": by_type,
+            "users_with_notifications": len(self.user_notifications),
         }

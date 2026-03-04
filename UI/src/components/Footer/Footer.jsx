@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from "react-redux";
-import { getFirstToolByCategory } from '../Tools/schema';
+import { getFirstToolByCategory } from '../../config/ToolSchema';
 import { setActiveTab, setActiveTool } from "../../store/warpSlice";
 
 export const Footer = ({ }) => {

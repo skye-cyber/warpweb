@@ -3,7 +3,7 @@ Dependency injection for FastAPI routes.
 Provides shared dependencies across the application.
 """
 
-from typing import Optional, Generator
+from typing import Optional
 from fastapi import Request, HTTPException, Depends
 import logging
 
@@ -36,7 +36,7 @@ def get_task_manager() -> TaskManager:
     if _task_manager is None:
         _task_manager = TaskManager(
             storage_path=settings.TASK_STORAGE_PATH,
-            filewarp_path=settings.FILEWARP_PATH
+            filewarp_path=settings.FILEWARP_PATH,
         )
         logger.info("TaskManager initialized")
     return _task_manager
@@ -47,8 +47,7 @@ def get_file_handler() -> FileHandler:
     global _file_handler
     if _file_handler is None:
         _file_handler = FileHandler(
-            base_upload_dir=settings.UPLOAD_DIR,
-            base_output_dir=settings.OUTPUT_DIR
+            base_upload_dir=settings.UPLOAD_DIR, base_output_dir=settings.OUTPUT_DIR
         )
         logger.info("FileHandler initialized")
     return _file_handler
@@ -70,8 +69,7 @@ def get_conversion_service() -> ConversionService:
     global _conversion_service
     if _conversion_service is None:
         _conversion_service = ConversionService(
-            task_manager=get_task_manager(),
-            file_handler=get_file_handler()
+            task_manager=get_task_manager(), file_handler=get_file_handler()
         )
         logger.info("ConversionService initialized")
     return _conversion_service
@@ -129,13 +127,12 @@ async def get_current_user(request: Request) -> Optional[dict]:
         raise HTTPException(status_code=403, detail="Invalid API key")
 
     # Return user info (placeholder)
-    return {
-        "user_id": "system",
-        "authenticated": True
-    }
+    return {"user_id": "system", "authenticated": True}
 
 
-async def validate_file_access(paths: list, user: Optional[dict] = Depends(get_current_user)):
+async def validate_file_access(
+    paths: list, user: Optional[dict] = Depends(get_current_user)
+):
     """
     Validate that user has access to specified files
     """
@@ -144,10 +141,7 @@ async def validate_file_access(paths: list, user: Optional[dict] = Depends(get_c
 
     for path in paths:
         if not file_handler.validate_path(path):
-            raise HTTPException(
-                status_code=400,
-                detail=f"File not accessible: {path}"
-            )
+            raise HTTPException(status_code=400, detail=f"File not accessible: {path}")
 
     return paths
 

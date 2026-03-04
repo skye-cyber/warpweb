@@ -1,24 +1,26 @@
 import uuid
-import time
 import json
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List, Callable
+from typing import Dict, Any, Optional, List
 from threading import Lock
 from pathlib import Path
 import logging
 
 from .executor import OperationExecutor
 from ..models.tasks import TaskModel, TaskStatus, TaskPriority, TaskSummary, TaskFilter
-from ..models.responses import TaskStatusResponse
+# from ..models.responses import TaskStatusResponse
 
 logger = logging.getLogger(__name__)
+
 
 class TaskManager:
     """
     Manages task creation, storage, and lifecycle
     """
 
-    def __init__(self, storage_path: Optional[str] = None, filewarp_path: Optional[str] = None):
+    def __init__(
+        self, storage_path: Optional[str] = None, filewarp_path: Optional[str] = None
+    ):
         self.tasks: Dict[str, TaskModel] = {}
         self.executor = OperationExecutor(filewarp_path)
         self._lock = Lock()
@@ -28,8 +30,12 @@ class TaskManager:
             Path(storage_path).mkdir(parents=True, exist_ok=True)
             self._load_tasks()
 
-    def create_task(self, operation: str, params: Dict[str, Any],
-                   priority: TaskPriority = TaskPriority.MEDIUM) -> str:
+    def create_task(
+        self,
+        operation: str,
+        params: Dict[str, Any],
+        priority: TaskPriority = TaskPriority.MEDIUM,
+    ) -> str:
         """
         Create a new task and start execution
         """
@@ -38,7 +44,7 @@ class TaskManager:
             task_type=self._determine_task_type(operation),
             operation=operation,
             params=params,
-            config={"priority": priority}
+            config={"priority": priority},
         )
 
         with self._lock:
@@ -66,7 +72,9 @@ class TaskManager:
                     task.error = str(result)
                 self._save_task(task)
 
-        logger.info(f"Task {task_id} completed with status: {task.status if task else 'unknown'}")
+        logger.info(
+            f"Task {task_id} completed with status: {task.status if task else 'unknown'}"
+        )
 
     def get_task(self, task_id: str) -> Optional[TaskModel]:
         """
@@ -84,19 +92,23 @@ class TaskManager:
             return None
 
         return {
-            'task_id': task.task_id,
-            'status': task.status,
-            'progress': task.progress,
-            'message': task.message,
-            'logs': task.logs[-50:],  # Last 50 logs
-            'created_at': task.created_at.isoformat() if task.created_at else None,
-            'started_at': task.started_at.isoformat() if task.started_at else None,
-            'completed_at': task.completed_at.isoformat() if task.completed_at else None,
-            'result': task.result,
-            'error': task.error
+            "task_id": task.task_id,
+            "status": task.status,
+            "progress": task.progress,
+            "message": task.message,
+            "logs": task.logs[-50:],  # Last 50 logs
+            "created_at": task.created_at.isoformat() if task.created_at else None,
+            "started_at": task.started_at.isoformat() if task.started_at else None,
+            "completed_at": task.completed_at.isoformat()
+            if task.completed_at
+            else None,
+            "result": task.result,
+            "error": task.error,
         }
 
-    def list_tasks(self, filter_params: Optional[TaskFilter] = None) -> List[TaskSummary]:
+    def list_tasks(
+        self, filter_params: Optional[TaskFilter] = None
+    ) -> List[TaskSummary]:
         """
         List tasks with optional filtering
         """
@@ -105,15 +117,19 @@ class TaskManager:
         with self._lock:
             for task in self.tasks.values():
                 if self._matches_filter(task, filter_params):
-                    tasks.append(TaskSummary(
-                        task_id=task.task_id,
-                        task_type=task.task_type,
-                        operation=task.operation,
-                        status=task.status,
-                        progress=task.progress,
-                        created_at=task.created_at.isoformat(),
-                        completed_at=task.completed_at.isoformat() if task.completed_at else None
-                    ))
+                    tasks.append(
+                        TaskSummary(
+                            task_id=task.task_id,
+                            task_type=task.task_type,
+                            operation=task.operation,
+                            status=task.status,
+                            progress=task.progress,
+                            created_at=task.created_at.isoformat(),
+                            completed_at=task.completed_at.isoformat()
+                            if task.completed_at
+                            else None,
+                        )
+                    )
 
         # Sort by created_at descending (newest first)
         tasks.sort(key=lambda x: x.created_at, reverse=True)
@@ -126,7 +142,9 @@ class TaskManager:
 
         return tasks
 
-    def _matches_filter(self, task: TaskModel, filter_params: Optional[TaskFilter]) -> bool:
+    def _matches_filter(
+        self, task: TaskModel, filter_params: Optional[TaskFilter]
+    ) -> bool:
         """
         Check if task matches filter criteria
         """
@@ -142,10 +160,16 @@ class TaskManager:
         if filter_params.operation and task.operation != filter_params.operation:
             return False
 
-        if filter_params.created_after and task.created_at < filter_params.created_after:
+        if (
+            filter_params.created_after
+            and task.created_at < filter_params.created_after
+        ):
             return False
 
-        if filter_params.created_before and task.created_at > filter_params.created_before:
+        if (
+            filter_params.created_before
+            and task.created_at > filter_params.created_before
+        ):
             return False
 
         return True
@@ -219,20 +243,20 @@ class TaskManager:
         """
         Determine task type from operation string
         """
-        if 'convert' in operation:
-            return 'conversion'
-        elif 'extract' in operation:
-            return 'extraction'
-        elif 'analyze' in operation:
-            return 'analysis'
-        elif 'join' in operation:
-            return 'join'
-        elif 'ocr' in operation:
-            return 'ocr'
-        elif 'record' in operation:
-            return 'recording'
+        if "convert" in operation:
+            return "conversion"
+        elif "extract" in operation:
+            return "extraction"
+        elif "analyze" in operation:
+            return "analysis"
+        elif "join" in operation:
+            return "join"
+        elif "ocr" in operation:
+            return "ocr"
+        elif "record" in operation:
+            return "recording"
         else:
-            return 'conversion'
+            return "conversion"
 
     def _save_task(self, task: TaskModel):
         """
@@ -243,16 +267,16 @@ class TaskManager:
 
         try:
             task_file = Path(self.storage_path) / f"{task.task_id}.json"
-            with open(task_file, 'w') as f:
+            with open(task_file, "w") as f:
                 # Convert to dict for JSON serialization
                 task_dict = task.dict()
                 # Convert datetime objects to strings
-                if task_dict.get('created_at'):
-                    task_dict['created_at'] = task_dict['created_at'].isoformat()
-                if task_dict.get('started_at'):
-                    task_dict['started_at'] = task_dict['started_at'].isoformat()
-                if task_dict.get('completed_at'):
-                    task_dict['completed_at'] = task_dict['completed_at'].isoformat()
+                if task_dict.get("created_at"):
+                    task_dict["created_at"] = task_dict["created_at"].isoformat()
+                if task_dict.get("started_at"):
+                    task_dict["started_at"] = task_dict["started_at"].isoformat()
+                if task_dict.get("completed_at"):
+                    task_dict["completed_at"] = task_dict["completed_at"].isoformat()
 
                 json.dump(task_dict, f, indent=2)
         except Exception as e:
@@ -269,16 +293,22 @@ class TaskManager:
             storage_dir = Path(self.storage_path)
             for task_file in storage_dir.glob("*.json"):
                 try:
-                    with open(task_file, 'r') as f:
+                    with open(task_file, "r") as f:
                         task_dict = json.load(f)
 
                     # Parse datetime strings back to datetime objects
-                    if task_dict.get('created_at'):
-                        task_dict['created_at'] = datetime.fromisoformat(task_dict['created_at'])
-                    if task_dict.get('started_at'):
-                        task_dict['started_at'] = datetime.fromisoformat(task_dict['started_at'])
-                    if task_dict.get('completed_at'):
-                        task_dict['completed_at'] = datetime.fromisoformat(task_dict['completed_at'])
+                    if task_dict.get("created_at"):
+                        task_dict["created_at"] = datetime.fromisoformat(
+                            task_dict["created_at"]
+                        )
+                    if task_dict.get("started_at"):
+                        task_dict["started_at"] = datetime.fromisoformat(
+                            task_dict["started_at"]
+                        )
+                    if task_dict.get("completed_at"):
+                        task_dict["completed_at"] = datetime.fromisoformat(
+                            task_dict["completed_at"]
+                        )
 
                     task = TaskModel(**task_dict)
                     self.tasks[task.task_id] = task
@@ -295,14 +325,14 @@ class TaskManager:
         Get task statistics
         """
         stats = {
-            'total': len(self.tasks),
-            'pending': 0,
-            'running': 0,
-            'completed': 0,
-            'failed': 0,
-            'cancelled': 0,
-            'by_type': {},
-            'avg_completion_time': None
+            "total": len(self.tasks),
+            "pending": 0,
+            "running": 0,
+            "completed": 0,
+            "failed": 0,
+            "cancelled": 0,
+            "by_type": {},
+            "avg_completion_time": None,
         }
 
         completion_times = []
@@ -313,16 +343,20 @@ class TaskManager:
                 stats[task.status] = stats.get(task.status, 0) + 1
 
                 # Count by type
-                stats['by_type'][task.task_type] = stats['by_type'].get(task.task_type, 0) + 1
+                stats["by_type"][task.task_type] = (
+                    stats["by_type"].get(task.task_type, 0) + 1
+                )
 
                 # Calculate completion time
                 if task.completed_at and task.started_at:
-                    completion_time = (task.completed_at - task.started_at).total_seconds()
+                    completion_time = (
+                        task.completed_at - task.started_at
+                    ).total_seconds()
                     completion_times.append(completion_time)
 
         if completion_times:
-            stats['avg_completion_time'] = sum(completion_times) / len(completion_times)
-            stats['min_completion_time'] = min(completion_times)
-            stats['max_completion_time'] = max(completion_times)
+            stats["avg_completion_time"] = sum(completion_times) / len(completion_times)
+            stats["min_completion_time"] = min(completion_times)
+            stats["max_completion_time"] = max(completion_times)
 
         return stats

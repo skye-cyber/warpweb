@@ -8,6 +8,7 @@ from ..models.responses import TaskStatusResponse
 
 logger = logging.getLogger(__name__)
 
+
 class ProgressService:
     """
     Service for managing progress tracking across the application
@@ -18,8 +19,9 @@ class ProgressService:
         self._listeners: Dict[str, List[Callable]] = {}
         self._lock = threading.Lock()
 
-    def create_tracker(self, task_id: str, total_steps: int = 100,
-                      description: str = "") -> ProgressTracker:
+    def create_tracker(
+        self, task_id: str, total_steps: int = 100, description: str = ""
+    ) -> ProgressTracker:
         """Create a new progress tracker"""
         tracker = self.progress_manager.create_tracker(task_id, total_steps)
         tracker.message = description
@@ -33,14 +35,18 @@ class ProgressService:
 
         return tracker
 
-    def update_progress(self, task_id: str, progress: int, message: Optional[str] = None):
+    def update_progress(
+        self, task_id: str, progress: int, message: Optional[str] = None
+    ):
         """Update progress for a task"""
         tracker = self.progress_manager.get_tracker(task_id)
         if tracker:
             tracker.update(progress, message)
             self._notify_listeners(task_id, tracker.get_status())
 
-    def increment_progress(self, task_id: str, steps: int = 1, message: Optional[str] = None):
+    def increment_progress(
+        self, task_id: str, steps: int = 1, message: Optional[str] = None
+    ):
         """Increment progress for a task"""
         tracker = self.progress_manager.get_tracker(task_id)
         if tracker:
@@ -76,13 +82,13 @@ class ProgressService:
 
         return TaskStatusResponse(
             task_id=task_id,
-            status=status.get('status', 'unknown'),
-            progress=status.get('progress', 0),
-            message=status.get('message', ''),
+            status=status.get("status", "unknown"),
+            progress=status.get("progress", 0),
+            message=status.get("message", ""),
             logs=[],  # Logs are handled elsewhere
-            created_at=status.get('start_time'),
-            started_at=status.get('start_time'),
-            completed_at=status.get('end_time')
+            created_at=status.get("start_time"),
+            started_at=status.get("start_time"),
+            completed_at=status.get("end_time"),
         )
 
     def register_listener(self, task_id: str, callback: Callable):
@@ -139,14 +145,16 @@ class ProgressService:
     def get_statistics(self) -> Dict[str, Any]:
         """Get progress statistics"""
         total = len(self.progress_manager.trackers)
-        completed = sum(1 for t in self.progress_manager.trackers.values() if t.is_completed)
+        completed = sum(
+            1 for t in self.progress_manager.trackers.values() if t.is_completed
+        )
         failed = sum(1 for t in self.progress_manager.trackers.values() if t.is_failed)
         active = total - completed - failed
 
         return {
-            'total': total,
-            'active': active,
-            'completed': completed,
-            'failed': failed,
-            'active_tasks': self.get_active_tasks()
+            "total": total,
+            "active": active,
+            "completed": completed,
+            "failed": failed,
+            "active_tasks": self.get_active_tasks(),
         }

@@ -1,8 +1,15 @@
-from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks, UploadFile, File
-from typing import List, Optional, Dict, Any
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Depends,
+    Query,
+    BackgroundTasks,
+    UploadFile,
+    File,
+)
+from typing import List
 import logging
 from pathlib import Path
-import tempfile
 import os
 
 from ...models.requests import OCRRequest
@@ -19,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/ocr", tags=["ocr"])
 
+
 @router.post("/extract", response_model=TaskResponse)
 async def extract_text(
     request: OCRRequest,
@@ -27,14 +35,14 @@ async def extract_text(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Extract text from images using OCR
     """
     try:
         # Validate image files
-        valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp']
+        valid_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp"]
         invalid_files = []
 
         for path in request.image_paths:
@@ -45,8 +53,7 @@ async def extract_text(
 
         if invalid_files:
             raise HTTPException(
-                status_code=400,
-                detail=f"Invalid files: {', '.join(invalid_files)}"
+                status_code=400, detail=f"Invalid files: {', '.join(invalid_files)}"
             )
 
         # Submit task
@@ -55,19 +62,16 @@ async def extract_text(
                 operation="ocr",
                 input_paths=request.image_paths,
                 output_path=request.output_path,
-                options={
-                    'language': request.language,
-                    'separator': request.separator
-                }
+                options={"language": request.language, "separator": request.separator},
             ),
-            priority
+            priority,
         )
 
         # Create progress tracker
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=len(request.image_paths) * 10,
-            description=f"Performing OCR on {len(request.image_paths)} images"
+            description=f"Performing OCR on {len(request.image_paths)} images",
         )
         tracker.start()
 
@@ -80,7 +84,7 @@ async def extract_text(
             task_id=task_id,
             status="pending",
             message=f"Performing OCR on {len(request.image_paths)} images",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -100,7 +104,7 @@ async def upload_and_extract(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Upload images and extract text using OCR
@@ -112,17 +116,16 @@ async def upload_and_extract(
         for file in files:
             # Validate file type
             ext = Path(file.filename).suffix.lower()
-            valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff']
+            valid_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff"]
 
             if ext not in valid_extensions:
                 raise HTTPException(
-                    status_code=400,
-                    detail=f"Invalid image format: {ext}"
+                    status_code=400, detail=f"Invalid image format: {ext}"
                 )
 
             # Save to temp file
             temp_path = file_handler.get_temp_path(prefix="ocr_upload", extension=ext)
-            with open(temp_path, 'wb') as f:
+            with open(temp_path, "wb") as f:
                 content = await file.read()
                 f.write(content)
 
@@ -130,9 +133,7 @@ async def upload_and_extract(
 
         # Create OCR request
         request = OCRRequest(
-            image_paths=temp_files,
-            language=language,
-            separator=separator
+            image_paths=temp_files, language=language, separator=separator
         )
 
         # Submit task
@@ -140,19 +141,16 @@ async def upload_and_extract(
             ConversionRequest(
                 operation="ocr",
                 input_paths=temp_files,
-                options={
-                    'language': language,
-                    'separator': separator
-                }
+                options={"language": language, "separator": separator},
             ),
-            priority
+            priority,
         )
 
         # Create progress tracker
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=len(temp_files) * 10,
-            description=f"Performing OCR on {len(temp_files)} uploaded images"
+            description=f"Performing OCR on {len(temp_files)} uploaded images",
         )
         tracker.start()
 
@@ -161,13 +159,15 @@ async def upload_and_extract(
             background_tasks.add_task(cleanup_temp_files, temp_files)
             background_tasks.add_task(cleanup_old_tasks, task_manager)
 
-        logger.info(f"OCR task submitted with {len(temp_files)} uploaded files: {task_id}")
+        logger.info(
+            f"OCR task submitted with {len(temp_files)} uploaded files: {task_id}"
+        )
 
         return TaskResponse(
             task_id=task_id,
             status="pending",
             message=f"Processing {len(temp_files)} uploaded images",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -196,22 +196,22 @@ async def get_supported_languages():
     """
     # This would typically come from Tesseract or similar
     return {
-        'languages': [
-            {'code': 'eng', 'name': 'English'},
-            {'code': 'spa', 'name': 'Spanish'},
-            {'code': 'fra', 'name': 'French'},
-            {'code': 'deu', 'name': 'German'},
-            {'code': 'ita', 'name': 'Italian'},
-            {'code': 'por', 'name': 'Portuguese'},
-            {'code': 'rus', 'name': 'Russian'},
-            {'code': 'jpn', 'name': 'Japanese'},
-            {'code': 'kor', 'name': 'Korean'},
-            {'code': 'chi_sim', 'name': 'Chinese (Simplified)'},
-            {'code': 'chi_tra', 'name': 'Chinese (Traditional)'},
-            {'code': 'ara', 'name': 'Arabic'},
-            {'code': 'hin', 'name': 'Hindi'}
+        "languages": [
+            {"code": "eng", "name": "English"},
+            {"code": "spa", "name": "Spanish"},
+            {"code": "fra", "name": "French"},
+            {"code": "deu", "name": "German"},
+            {"code": "ita", "name": "Italian"},
+            {"code": "por", "name": "Portuguese"},
+            {"code": "rus", "name": "Russian"},
+            {"code": "jpn", "name": "Japanese"},
+            {"code": "kor", "name": "Korean"},
+            {"code": "chi_sim", "name": "Chinese (Simplified)"},
+            {"code": "chi_tra", "name": "Chinese (Traditional)"},
+            {"code": "ara", "name": "Arabic"},
+            {"code": "hin", "name": "Hindi"},
         ],
-        'default': 'eng'
+        "default": "eng",
     }
 
 

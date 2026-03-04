@@ -1,4 +1,3 @@
-import time
 import threading
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime, timedelta
@@ -6,6 +5,7 @@ from collections import deque
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class ProgressTracker:
     """
@@ -93,10 +93,9 @@ class ProgressTracker:
     def _record_progress(self):
         """Record progress point for ETA calculation"""
         if self.start_time:
-            self.progress_history.append({
-                'timestamp': datetime.now(),
-                'progress': self.current_step
-            })
+            self.progress_history.append(
+                {"timestamp": datetime.now(), "progress": self.current_step}
+            )
 
     def get_progress(self) -> int:
         """Get current progress percentage"""
@@ -115,8 +114,8 @@ class ProgressTracker:
         first = self.progress_history[0]
         last = self.progress_history[-1]
 
-        time_diff = (last['timestamp'] - first['timestamp']).total_seconds()
-        progress_diff = last['progress'] - first['progress']
+        time_diff = (last["timestamp"] - first["timestamp"]).total_seconds()
+        progress_diff = last["progress"] - first["progress"]
 
         if progress_diff <= 0 or time_diff <= 0:
             return None
@@ -145,19 +144,19 @@ class ProgressTracker:
             eta = self.get_eta()
 
             return {
-                'task_id': self.task_id,
-                'progress': self.get_progress(),
-                'current_step': self.current_step,
-                'total_steps': self.total_steps,
-                'message': self.message,
-                'details': self.details,
-                'is_completed': self.is_completed,
-                'is_failed': self.is_failed,
-                'elapsed_time': self.get_elapsed_time(),
-                'eta': eta,
-                'eta_human': self._format_eta(eta),
-                'start_time': self.start_time.isoformat() if self.start_time else None,
-                'end_time': self.end_time.isoformat() if self.end_time else None
+                "task_id": self.task_id,
+                "progress": self.get_progress(),
+                "current_step": self.current_step,
+                "total_steps": self.total_steps,
+                "message": self.message,
+                "details": self.details,
+                "is_completed": self.is_completed,
+                "is_failed": self.is_failed,
+                "elapsed_time": self.get_elapsed_time(),
+                "eta": eta,
+                "eta_human": self._format_eta(eta),
+                "start_time": self.start_time.isoformat() if self.start_time else None,
+                "end_time": self.end_time.isoformat() if self.end_time else None,
             }
 
     def _format_eta(self, seconds: Optional[float]) -> Optional[str]:

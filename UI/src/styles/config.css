@@ -285,7 +285,18 @@
         @apply fill-blue-700 dark:fill-blue-300;
     }
 
-    nav
+    .chevronright{
+        @apply rotate-90
+    }
+    .chevronleft{
+        @apply rotate-180
+    }
+    .chevrondown{
+        @apply -rotate-90
+    }
+    .chevronup{
+        @apply -rotate-0
+    }
 
     .bar:nth-child(1) {
         animation-delay: 0s;

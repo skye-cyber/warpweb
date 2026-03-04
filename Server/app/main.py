@@ -9,8 +9,6 @@ from contextlib import asynccontextmanager
 import logging
 import logging.config
 import uvicorn
-from pathlib import Path
-
 from .api.routes import (
     conversion_router,
     pdf_router,
@@ -22,7 +20,7 @@ from .api.routes import (
     system_router,
     tasks_router,
     formats_router,
-    websocket_router
+    websocket_router,
 )
 from .config import settings, LOGGING_CONFIG
 from .api.dependencies import cleanup_resources
@@ -61,7 +59,7 @@ app = FastAPI(
     version=settings.API_VERSION,
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 
@@ -91,7 +89,9 @@ app.include_router(websocket_router, prefix=settings.API_V1_PREFIX)
 
 # Mount static directories
 if settings.OUTPUT_DIR.exists():
-    app.mount("/outputs", StaticFiles(directory=str(settings.OUTPUT_DIR)), name="outputs")
+    app.mount(
+        "/outputs", StaticFiles(directory=str(settings.OUTPUT_DIR)), name="outputs"
+    )
 
 
 @app.get("/")
@@ -102,17 +102,14 @@ async def root():
         "version": settings.API_VERSION,
         "description": settings.API_DESCRIPTION,
         "docs": "/docs" if settings.DEBUG else None,
-        "health": "/api/v1/system/health"
+        "health": "/api/v1/system/health",
     }
 
 
 @app.get("/health")
 async def health_check():
     """Simple health check endpoint"""
-    return {
-        "status": "healthy",
-        "version": settings.API_VERSION
-    }
+    return {"status": "healthy", "version": settings.API_VERSION}
 
 
 def start():
@@ -123,7 +120,7 @@ def start():
         port=settings.PORT,
         reload=settings.RELOAD,
         workers=settings.WORKERS,
-        log_level=settings.LOG_LEVEL.lower()
+        log_level=settings.LOG_LEVEL.lower(),
     )
 
 

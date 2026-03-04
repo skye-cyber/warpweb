@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from 'react-redux';
 import { setActiveTab, setActiveTool } from "../../store/warpSlice";
-import { getFirstToolByCategory } from "../Tools/schema";
+import { getFirstToolByCategory } from "../../config/ToolSchema";
 import { useTheme } from "../Themes/useThemeHeadless";
 import { Images, Moon, PdfDocument, Stack, Sun, Video, Audio, Dashboard, FileWithLines, Hambuger } from "../svg/core";
 import { CollapsiblePanel } from "./Panel";

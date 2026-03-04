@@ -1,12 +1,13 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks
-from typing import List, Optional, Dict, Any
+from typing import Optional
 import logging
-
 from ...models.requests import (
-    ConversionRequest, ConversionType,
-    PDFJoinRequest, PageExtractionRequest
+    ConversionRequest,
+    ConversionType,
+    PDFJoinRequest,
+    PageExtractionRequest,
 )
-from ...models.responses import TaskResponse, OperationResult
+from ...models.responses import TaskResponse
 from ...models.tasks import TaskPriority
 from ...services.conversion_service import ConversionService
 from ...services.progress_service import ProgressService
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/pdf", tags=["pdf"])
 
+
 @router.post("/join", response_model=TaskResponse)
 async def join_pdfs(
     request: PDFJoinRequest,
@@ -27,7 +29,7 @@ async def join_pdfs(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Join multiple PDF files into one
@@ -35,10 +37,9 @@ async def join_pdfs(
     try:
         # Validate PDF files
         for pdf_path in request.pdf_paths:
-            if not file_handler.validate_file_type(pdf_path, ['.pdf']):
+            if not file_handler.validate_file_type(pdf_path, [".pdf"]):
                 raise HTTPException(
-                    status_code=400,
-                    detail=f"Not a PDF file: {pdf_path}"
+                    status_code=400, detail=f"Not a PDF file: {pdf_path}"
                 )
 
         # Create conversion request
@@ -46,7 +47,7 @@ async def join_pdfs(
             operation=ConversionType.PDF_JOIN,
             input_paths=request.pdf_paths,
             output_path=request.output_path,
-            options={'order': request.order}
+            options={"order": request.order},
         )
 
         # Submit task
@@ -56,7 +57,7 @@ async def join_pdfs(
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=len(request.pdf_paths) * 5,
-            description=f"Joining {len(request.pdf_paths)} PDFs"
+            description=f"Joining {len(request.pdf_paths)} PDFs",
         )
         tracker.start()
 
@@ -69,7 +70,7 @@ async def join_pdfs(
             task_id=task_id,
             status="pending",
             message=f"Joining {len(request.pdf_paths)} PDF files",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -87,17 +88,16 @@ async def extract_pages(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Extract specific pages from a PDF
     """
     try:
         # Validate PDF
-        if not file_handler.validate_file_type(request.pdf_path, ['.pdf']):
+        if not file_handler.validate_file_type(request.pdf_path, [".pdf"]):
             raise HTTPException(
-                status_code=400,
-                detail=f"Not a PDF file: {request.pdf_path}"
+                status_code=400, detail=f"Not a PDF file: {request.pdf_path}"
             )
 
         # Create conversion request
@@ -105,7 +105,7 @@ async def extract_pages(
             operation=ConversionType.EXTRACT_PAGES,
             input_paths=[request.pdf_path],
             output_path=request.output_path,
-            options={'pages': request.pages}
+            options={"pages": request.pages},
         )
 
         # Submit task
@@ -115,7 +115,7 @@ async def extract_pages(
         tracker = progress_service.create_tracker(
             task_id,
             total_steps=len(request.pages),
-            description=f"Extracting {len(request.pages)} pages from PDF"
+            description=f"Extracting {len(request.pages)} pages from PDF",
         )
         tracker.start()
 
@@ -128,7 +128,7 @@ async def extract_pages(
             task_id=task_id,
             status="pending",
             message=f"Extracting pages {request.pages} from PDF",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -148,29 +148,26 @@ async def extract_images_from_pdf(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Extract images from a PDF
     """
     try:
         # Validate PDF
-        if not file_handler.validate_file_type(pdf_path, ['.pdf']):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Not a PDF file: {pdf_path}"
-            )
+        if not file_handler.validate_file_type(pdf_path, [".pdf"]):
+            raise HTTPException(status_code=400, detail=f"Not a PDF file: {pdf_path}")
 
         # Create conversion request
         options = {}
         if image_size:
-            options['size'] = image_size
+            options["size"] = image_size
 
         conv_request = ConversionRequest(
             operation=ConversionType.EXTRACT_IMAGES,
             input_paths=[pdf_path],
             output_path=output_dir,
-            options=options
+            options=options,
         )
 
         # Submit task
@@ -178,9 +175,7 @@ async def extract_images_from_pdf(
 
         # Create progress tracker
         tracker = progress_service.create_tracker(
-            task_id,
-            total_steps=100,
-            description="Extracting images from PDF"
+            task_id, total_steps=100, description="Extracting images from PDF"
         )
         tracker.start()
 
@@ -194,7 +189,7 @@ async def extract_images_from_pdf(
             task_id=task_id,
             status="pending",
             message="Extracting images from PDF",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -214,37 +209,32 @@ async def scan_pdf(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Scan PDF and extract text
     """
     try:
         # Validate PDF
-        if not file_handler.validate_file_type(pdf_path, ['.pdf']):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Not a PDF file: {pdf_path}"
-            )
+        if not file_handler.validate_file_type(pdf_path, [".pdf"]):
+            raise HTTPException(status_code=400, detail=f"Not a PDF file: {pdf_path}")
 
         # Map mode to operation
         operation_map = {
-            'standard': ConversionType.SCAN_PDF,
-            'image': ConversionType.SCAN_AS_IMAGE,
-            'long': ConversionType.SCAN_LONG
+            "standard": ConversionType.SCAN_PDF,
+            "image": ConversionType.SCAN_AS_IMAGE,
+            "long": ConversionType.SCAN_LONG,
         }
 
         operation = operation_map.get(mode, ConversionType.SCAN_PDF)
 
         # Create conversion request
         options = {}
-        if mode == 'long':
-            options['separator'] = separator
+        if mode == "long":
+            options["separator"] = separator
 
         conv_request = ConversionRequest(
-            operation=operation,
-            input_paths=[pdf_path],
-            options=options
+            operation=operation, input_paths=[pdf_path], options=options
         )
 
         # Submit task
@@ -252,9 +242,7 @@ async def scan_pdf(
 
         # Create progress tracker
         tracker = progress_service.create_tracker(
-            task_id,
-            total_steps=100,
-            description=f"Scanning PDF ({mode} mode)"
+            task_id, total_steps=100, description=f"Scanning PDF ({mode} mode)"
         )
         tracker.start()
 
@@ -268,7 +256,7 @@ async def scan_pdf(
             task_id=task_id,
             status="pending",
             message=f"Scanning PDF in {mode} mode",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -287,24 +275,21 @@ async def pdf_to_long_image(
     conversion_service: ConversionService = Depends(get_conversion_service),
     task_manager: TaskManager = Depends(get_task_manager),
     file_handler: FileHandler = Depends(get_file_handler),
-    progress_service: ProgressService = Depends(get_progress_service)
+    progress_service: ProgressService = Depends(get_progress_service),
 ):
     """
     Convert PDF to a single long image
     """
     try:
         # Validate PDF
-        if not file_handler.validate_file_type(pdf_path, ['.pdf']):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Not a PDF file: {pdf_path}"
-            )
+        if not file_handler.validate_file_type(pdf_path, [".pdf"]):
+            raise HTTPException(status_code=400, detail=f"Not a PDF file: {pdf_path}")
 
         # Create conversion request
         conv_request = ConversionRequest(
             operation=ConversionType.PDF_TO_LONG_IMAGE,
             input_paths=[pdf_path],
-            output_path=output_path
+            output_path=output_path,
         )
 
         # Submit task
@@ -312,9 +297,7 @@ async def pdf_to_long_image(
 
         # Create progress tracker
         tracker = progress_service.create_tracker(
-            task_id,
-            total_steps=100,
-            description="Converting PDF to long image"
+            task_id, total_steps=100, description="Converting PDF to long image"
         )
         tracker.start()
 
@@ -328,7 +311,7 @@ async def pdf_to_long_image(
             task_id=task_id,
             status="pending",
             message="Converting PDF to long image",
-            created_at=tracker.start_time.isoformat() if tracker.start_time else None
+            created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
     except HTTPException:
@@ -340,27 +323,23 @@ async def pdf_to_long_image(
 
 @router.get("/info")
 async def get_pdf_info(
-    pdf_path: str,
-    file_handler: FileHandler = Depends(get_file_handler)
+    pdf_path: str, file_handler: FileHandler = Depends(get_file_handler)
 ):
     """
     Get information about a PDF file
     """
     try:
-        if not file_handler.validate_file_type(pdf_path, ['.pdf']):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Not a PDF file: {pdf_path}"
-            )
+        if not file_handler.validate_file_type(pdf_path, [".pdf"]):
+            raise HTTPException(status_code=400, detail=f"Not a PDF file: {pdf_path}")
 
         info = file_handler.get_file_info(pdf_path)
 
         # Add PDF-specific info (would need PyPDF2 or similar)
         # This is a placeholder
-        info['pdf_info'] = {
-            'pages': 'Unknown',
-            'version': 'Unknown',
-            'encrypted': False
+        info["pdf_info"] = {
+            "pages": "Unknown",
+            "version": "Unknown",
+            "encrypted": False,
         }
 
         return info

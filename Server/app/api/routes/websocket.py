@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/ws", tags=["websocket"])
 
+
 @router.websocket("/task/{task_id}")
 async def task_websocket(
     websocket: WebSocket,

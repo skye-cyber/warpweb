@@ -3,7 +3,6 @@ Configuration management for FileWarp backend.
 Loads settings from environment variables with defaults.
 """
 
-import os
 from pathlib import Path
 from typing import Optional, List
 from pydantic import BaseSettings, Field, validator
@@ -37,7 +36,9 @@ class Settings(BaseSettings):
     API_DESCRIPTION: str = "REST API for FileWarp operations"
 
     # Security
-    SECRET_KEY: str = Field("filewarp-secret-key-change-in-production", env="SECRET_KEY")
+    SECRET_KEY: str = Field(
+        "filewarp-secret-key-change-in-production", env="SECRET_KEY"
+    )
     API_KEY: Optional[str] = Field(None, env="API_KEY")
     ENABLE_AUTH: bool = Field(False, env="ENABLE_AUTH")
     CORS_ORIGINS: List[str] = Field(["*"], env="CORS_ORIGINS")
@@ -47,7 +48,9 @@ class Settings(BaseSettings):
     UPLOAD_DIR: Path = Field(DEFAULT_UPLOAD_DIR, env="UPLOAD_DIR")
     OUTPUT_DIR: Path = Field(DEFAULT_OUTPUT_DIR, env="OUTPUT_DIR")
     LOG_DIR: Path = Field(DEFAULT_LOG_DIR, env="LOG_DIR")
-    TASK_STORAGE_PATH: Optional[Path] = Field(DEFAULT_TASK_STORAGE, env="TASK_STORAGE_PATH")
+    TASK_STORAGE_PATH: Optional[Path] = Field(
+        DEFAULT_TASK_STORAGE, env="TASK_STORAGE_PATH"
+    )
 
     # File limits
     MAX_UPLOAD_SIZE: int = Field(1024 * 1024 * 1024, env="MAX_UPLOAD_SIZE")  # 1GB
@@ -62,8 +65,7 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = Field("INFO", env="LOG_LEVEL")
     LOG_FORMAT: str = Field(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        env="LOG_FORMAT"
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s", env="LOG_FORMAT"
     )
 
     # WebSocket

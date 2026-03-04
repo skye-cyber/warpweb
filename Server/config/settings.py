@@ -2,6 +2,7 @@
 Settings import module for backward compatibility.
 Re-exports settings from app.config.
 """
+
 from pydantic import BaseSettings
 from typing import Optional
 # from app.config import settings
@@ -28,6 +29,7 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+
 
 settings = Settings()
 __all__ = ["settings"]

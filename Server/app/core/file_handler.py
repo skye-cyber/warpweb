@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, List, Dict, Any, Union
+from typing import Optional, List, Dict, Any
 import hashlib
 import mimetypes
 import humanize
@@ -10,12 +10,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class FileHandler:
     """
     Handles file operations, validation, and path management
     """
 
-    def __init__(self, base_upload_dir: str = "uploads", base_output_dir: str = "outputs"):
+    def __init__(
+        self, base_upload_dir: str = "uploads", base_output_dir: str = "outputs"
+    ):
         self.base_upload_dir = Path(base_upload_dir)
         self.base_output_dir = Path(base_output_dir)
         self._ensure_directories()
@@ -24,9 +27,13 @@ class FileHandler:
         """Ensure required directories exist"""
         self.base_upload_dir.mkdir(parents=True, exist_ok=True)
         self.base_output_dir.mkdir(parents=True, exist_ok=True)
-        logger.info(f"File handler initialized with upload dir: {self.base_upload_dir}, output dir: {self.base_output_dir}")
+        logger.info(
+            f"File handler initialized with upload dir: {self.base_upload_dir}, output dir: {self.base_output_dir}"
+        )
 
-    def validate_path(self, path: str, check_read: bool = True, check_write: bool = False) -> bool:
+    def validate_path(
+        self, path: str, check_read: bool = True, check_write: bool = False
+    ) -> bool:
         """
         Validate that a path exists and has required permissions
         """
@@ -76,24 +83,28 @@ class FileHandler:
         mime_type, _ = mimetypes.guess_type(path)
 
         return {
-            'name': p.name,
-            'path': str(p.absolute()),
-            'parent': str(p.parent),
-            'size': stat.st_size,
-            'size_human': humanize.naturalsize(stat.st_size),
-            'created': datetime.fromtimestamp(stat.st_ctime).isoformat(),
-            'modified': datetime.fromtimestamp(stat.st_mtime).isoformat(),
-            'accessed': datetime.fromtimestamp(stat.st_atime).isoformat(),
-            'extension': p.suffix.lower(),
-            'mime_type': mime_type or 'application/octet-stream',
-            'is_file': p.is_file(),
-            'is_directory': p.is_dir(),
-            'is_symlink': p.is_symlink(),
-            'permissions': oct(stat.st_mode)[-3:]
+            "name": p.name,
+            "path": str(p.absolute()),
+            "parent": str(p.parent),
+            "size": stat.st_size,
+            "size_human": humanize.naturalsize(stat.st_size),
+            "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
+            "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+            "accessed": datetime.fromtimestamp(stat.st_atime).isoformat(),
+            "extension": p.suffix.lower(),
+            "mime_type": mime_type or "application/octet-stream",
+            "is_file": p.is_file(),
+            "is_directory": p.is_dir(),
+            "is_symlink": p.is_symlink(),
+            "permissions": oct(stat.st_mode)[-3:],
         }
 
-    def generate_output_path(self, input_path: str, target_format: Optional[str] = None,
-                            suffix: str = "_converted") -> str:
+    def generate_output_path(
+        self,
+        input_path: str,
+        target_format: Optional[str] = None,
+        suffix: str = "_converted",
+    ) -> str:
         """
         Generate an output path based on input
         """
@@ -115,7 +126,10 @@ class FileHandler:
         output_path = output_dir / output_filename
         counter = 1
         while output_path.exists():
-            output_path = output_dir / f"{input_path.stem}{suffix}_{counter}{input_path.suffix if not target_format else '.' + target_format}"
+            output_path = (
+                output_dir
+                / f"{input_path.stem}{suffix}_{counter}{input_path.suffix if not target_format else '.' + target_format}"
+            )
             counter += 1
 
         return str(output_path)
@@ -180,20 +194,21 @@ class FileHandler:
             logger.error(f"Failed to delete {path}: {e}")
             return False
 
-    def get_file_hash(self, path: str, algorithm: str = 'sha256') -> str:
+    def get_file_hash(self, path: str, algorithm: str = "sha256") -> str:
         """
         Calculate file hash
         """
         hash_func = hashlib.new(algorithm)
 
-        with open(path, 'rb') as f:
-            for chunk in iter(lambda: f.read(4096), b''):
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
                 hash_func.update(chunk)
 
         return hash_func.hexdigest()
 
-    def list_directory(self, path: str, pattern: Optional[str] = None,
-                      recursive: bool = False) -> List[Dict[str, Any]]:
+    def list_directory(
+        self, path: str, pattern: Optional[str] = None, recursive: bool = False
+    ) -> List[Dict[str, Any]]:
         """
         List contents of a directory
         """
@@ -203,13 +218,15 @@ class FileHandler:
             raise NotADirectoryError(f"Not a directory: {path}")
 
         if recursive:
-            files = list(p.rglob(pattern)) if pattern else list(p.rglob('*'))
+            files = list(p.rglob(pattern)) if pattern else list(p.rglob("*"))
         else:
-            files = list(p.glob(pattern)) if pattern else list(p.glob('*'))
+            files = list(p.glob(pattern)) if pattern else list(p.glob("*"))
 
         return [self.get_file_info(str(f)) for f in files]
 
-    def get_temp_path(self, prefix: str = "tmp", extension: Optional[str] = None) -> str:
+    def get_temp_path(
+        self, prefix: str = "tmp", extension: Optional[str] = None
+    ) -> str:
         """
         Generate a temporary file path
         """
@@ -217,7 +234,7 @@ class FileHandler:
         filename = f"{prefix}_{timestamp}"
 
         if extension:
-            if not extension.startswith('.'):
+            if not extension.startswith("."):
                 extension = f".{extension}"
             filename += extension
 
