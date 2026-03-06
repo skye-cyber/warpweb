@@ -1,10 +1,8 @@
 from typing import Dict, Any, Optional, List, Callable
 from datetime import datetime
-import logging
 import asyncio
 from enum import Enum
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 
 class NotificationType(str, Enum):

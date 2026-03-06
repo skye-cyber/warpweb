@@ -8,11 +8,9 @@ from fastapi import (
     File,
 )
 from typing import List
-import logging
 from pathlib import Path
 import os
-
-from warpapp.models.requests import OCRRequest
+from warpapp.models.requests import OCRRequest, ConversionRequest
 from warpapp.models.responses import TaskResponse
 from warpapp.models.tasks import TaskPriority
 from warpapp.services.conversion_service import ConversionService
@@ -21,8 +19,7 @@ from warpapp.core.task_manager import TaskManager
 from warpapp.core.file_handler import FileHandler
 from warpapp.api.dependencies import get_conversion_service, get_task_manager, get_file_handler
 from warpapp.api.dependencies import get_progress_service
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 router = APIRouter(prefix="/api/v1/ocr", tags=["ocr"])
 
@@ -175,7 +172,7 @@ async def upload_and_extract(
         for temp_file in temp_files:
             try:
                 os.unlink(temp_file)
-            except:
+            except Exception:
                 pass
         raise
     except Exception as e:
@@ -183,7 +180,7 @@ async def upload_and_extract(
         for temp_file in temp_files:
             try:
                 os.unlink(temp_file)
-            except:
+            except Exception:
                 pass
         logger.error(f"Error in upload OCR: {e}")
         raise HTTPException(status_code=500, detail=str(e))

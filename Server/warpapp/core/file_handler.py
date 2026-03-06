@@ -6,9 +6,7 @@ from typing import Optional, List, Dict, Any
 import hashlib
 import mimetypes
 import humanize
-import logging
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 
 class FileHandler:

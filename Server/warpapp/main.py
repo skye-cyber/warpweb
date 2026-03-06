@@ -7,8 +7,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
-import logging
-import logging.config
 import uvicorn
 sys.path.insert(0, Path(__file__).parent.parent.absolute().as_posix())
 from warpapp.api.routes import (
@@ -24,12 +22,9 @@ from warpapp.api.routes import (
     formats_router,
     websocket_router,
 )
-from warpapp.config import settings, LOGGING_CONFIG
+from warpapp.config import settings
 from warpapp.api.dependencies import cleanup_resources
-
-# Configure logging
-logging.config.dictConfig(LOGGING_CONFIG)
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 
 @asynccontextmanager
@@ -117,7 +112,7 @@ async def health_check():
 def start():
     """Start the server using uvicorn"""
     uvicorn.run(
-        "app.main:app",
+        "warpapp.main:app",
         host=settings.HOST,
         port=settings.PORT,
         reload=settings.RELOAD,

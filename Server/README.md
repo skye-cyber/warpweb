@@ -19,8 +19,8 @@ REST API backend for FileWarp operations with async task management and real-tim
 
 ```bash
 # Clone repository
-git clone https://github.com/filewarp/filewarp-backend.git
-cd filewarp-backend
+git clone https://github.com/skye-cyber/warpweb.git
+cd warpweb
 
 # Create virtual environment
 python -m venv venv
@@ -34,7 +34,7 @@ cp .env.example .env
 # Edit .env with your configuration
 
 # Run the server
-python -m app.main
+python -m warpapp.main
 ```
 
 ## Docker
@@ -43,15 +43,15 @@ python -m app.main
 docker-compose up -d
 
 # Or build manually
-docker build -t filewarp-backend .
-docker run -p 8000:8000 filewarp-backend
+docker build -t warpweb .
+docker run -p 8000:8000 warpweb
 ```
 
 ## Architecture Components
 ### 1. Core Backend Structure
 ```bash
 Server/
-├── app/
+├── warpapp/
 │   ├── __init__.py
 │   ├── main.py                 # FastAPI app entry
 │   ├── api/

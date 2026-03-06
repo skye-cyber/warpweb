@@ -8,7 +8,6 @@ from fastapi import (
     # File,
 )
 from typing import Optional, Dict, Any
-import logging
 from pathlib import Path
 
 from warpapp.models.requests import ConversionRequest, ConversionType, AudioJoinRequest
@@ -20,8 +19,8 @@ from warpapp.core.task_manager import TaskManager
 from warpapp.core.file_handler import FileHandler
 from warpapp.api.dependencies import get_conversion_service, get_task_manager, get_file_handler
 from warpapp.api.dependencies import get_progress_service
+from warpapp.utils.logger import logger
 
-logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/audio", tags=["audio"])
 

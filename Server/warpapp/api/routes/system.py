@@ -1,7 +1,7 @@
-import logging
 import platform
 import psutil
 import time
+import math
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Depends, Query
 from warpapp.core.task_manager import TaskManager
@@ -9,8 +9,7 @@ from warpapp.services.progress_service import ProgressService
 from warpapp.api.dependencies import get_task_manager, get_progress_service
 from warpapp.models.responses import SystemInfoResponse
 from warpapp.models.requests import ConversionType
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 router = APIRouter(prefix="/api/v1/system", tags=["system"])
 
@@ -174,6 +173,7 @@ async def get_metrics(
             "timestamp": datetime.now().isoformat(),
             "system": {
                 "cpu": {
+                    "unit": "percentage",
                     "overall": psutil.cpu_percent(interval=1),
                     "per_cpu": cpu_percent,
                     "load_avg": [
@@ -183,15 +183,17 @@ async def get_metrics(
                     else None,
                 },
                 "memory": {
-                    "total": memory.total,
-                    "available": memory.available,
+                    "unit": "MB",
+                    "total": math.floor(memory.total/1048576),
+                    "available": math.floor(memory.available/1048576),
                     "percent": memory.percent,
-                    "used": memory.used,
+                    "used": math.floor(memory.used/1048576),
                 },
                 "disk": {
-                    "total": disk.total,
-                    "used": disk.used,
-                    "free": disk.free,
+                    "unit": "GB",
+                    "total": math.floor(disk.total/1073741824),
+                    "used": math.floor(disk.used/1073741824),
+                    "free": math.floor(disk.free/1073741824),
                     "percent": disk.percent,
                 },
             },
@@ -237,7 +239,7 @@ async def cleanup_system(
         temp_count = 0  # Placeholder
 
         return {
-            "message": f"Cleanup completed",
+            "message": "Cleanup completed",
             "tasks_removed": task_count,
             "temp_files_removed": temp_count,
             "days": days,

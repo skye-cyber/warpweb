@@ -27,7 +27,7 @@ class ConversionType(str, Enum):
     CONVERT_DOC_ALT = "convert_doc"
     DOC_TO_IMAGE = "doc-to-image"
     DOC_TO_IMAGE_ALT = "doc_to_image"
-    HTML_TO_WORD = "html-to-word"
+    HTML_TO_WORD = "html2word"
     HTML_TO_WORD_ALT = "html_to_word"
     MARKDOWN_TO_DOCX = "markdown-to-docx"
     MARKDOWN_TO_DOCX_ALT = "markdown_to_docx"
@@ -74,7 +74,7 @@ class ConversionType(str, Enum):
     SCAN_AS_IMAGE_ALT = "scan_as_image"
     SCAN_LONG = "scan-long"
     SCAN_LONG_ALT = "scan_long"
-    PDF_TO_LONG_IMAGE = "pdf-to-long-image"
+    PDF_TO_LONG_IMAGE = "pdf2long-image"
     PDF_TO_LONG_IMAGE_ALT = "pdf_to_long_image"
 
     # OCR
@@ -85,7 +85,7 @@ class ConversionType(str, Enum):
     CONVERT_SVG_ALT = "convert_svg"
 
     # Text
-    TEXT_TO_WORD = "text-to-word"
+    TEXT_TO_WORD = "text2word"
     TEXT_TO_WORD_ALT = "text_to_word"
 
     # Voice
@@ -238,14 +238,17 @@ class PageExtractionRequest(BaseModel):
     """Request model for extracting pages from PDF"""
 
     pdf_path: str = Field(..., description="Path to PDF file")
-    pages: List[int] = Field(..., description="Page numbers to extract", min_items=1)
+    start_page: Optional[int] = Field(1, description="Start page", ge=0)
+    stop_page: Optional[int] = Field(-1, description="Stop page(last page)", ge=-1)
+    # pages: List[int] = Field(..., description="Page numbers to extract", min_items=1)
     output_path: Optional[str] = None
 
-    @validator("pages")
-    def validate_pages(cls, v):
-        for page in v:
-            if page < 1:
-                raise ValueError(f"Page numbers must be >= 1, got: {page}")
+    @validator("pdf_path")
+    def validate_pdf_file(cls, v):
+        if not os.path.exists(v):
+            raise ValueError(f"PDF file does not exist: {v}")
+        if not v.lower().endswith(".pdf"):
+            raise ValueError(f"Not a pdf file: {v}")
         return v
 
 

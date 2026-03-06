@@ -1,11 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Optional
-import logging
-
 from warpapp.services.format_service import FormatService
 from warpapp.api.dependencies import get_format_service
+from warpapp.utils.logger import logger
 
-logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/formats", tags=["formats"])
 
@@ -125,7 +123,7 @@ async def get_formats_by_category(
     return {"category": category, "count": len(formats), "formats": formats}
 
 
-@router.get("/suggest-output")
+@router.get("/suggest-output/")
 async def suggest_output_format(
     input_format: str,
     preferred: Optional[str] = Query(None, description="Preferred output format"),

@@ -4,13 +4,9 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 from threading import Lock
 from pathlib import Path
-import logging
-
 from warpapp.core.executor import OperationExecutor
 from warpapp.models.tasks import TaskModel, TaskStatus, TaskPriority, TaskSummary, TaskFilter
-# from ..models.responses import TaskStatusResponse
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 
 class TaskManager:

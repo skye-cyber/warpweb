@@ -1,7 +1,5 @@
 from typing import Dict, Any, Optional, List, Tuple
-import logging
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 
 class FormatService:

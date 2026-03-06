@@ -1,12 +1,9 @@
 from typing import Dict, Any, Optional, Callable, List
 from datetime import datetime, timedelta
 import threading
-import logging
-
 from ..core.progress_tracker import ProgressManager, ProgressTracker
 from ..models.responses import TaskStatusResponse
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 
 class ProgressService:

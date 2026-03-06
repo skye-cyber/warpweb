@@ -1,7 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks
 from typing import List, Optional
-import logging
-
 from warpapp.core.task_manager import TaskManager
 from warpapp.services.progress_service import ProgressService
 from warpapp.services.websocket_manager import WebSocketManager
@@ -12,8 +10,7 @@ from warpapp.api.dependencies import (
 )
 from warpapp.models.tasks import TaskFilter, TaskSummary
 from warpapp.models.responses import TaskStatusResponse
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 router = APIRouter(prefix="/api/v1/tasks", tags=["tasks"])
 

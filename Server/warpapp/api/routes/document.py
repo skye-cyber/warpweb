@@ -1,8 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks
 from typing import List, Optional
-import logging
 from pathlib import Path
-
 from warpapp.models.requests import ConversionRequest, ConversionType, TextToWordRequest
 from warpapp.models.responses import TaskResponse
 from warpapp.models.tasks import TaskPriority
@@ -12,8 +10,7 @@ from warpapp.core.task_manager import TaskManager
 from warpapp.core.file_handler import FileHandler
 from warpapp.api.dependencies import get_conversion_service, get_task_manager, get_file_handler
 from warpapp.api.dependencies import get_progress_service
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 router = APIRouter(prefix="/api/v1/document", tags=["document"])
 
@@ -164,7 +161,7 @@ async def document_to_image(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/html-to-word", response_model=TaskResponse)
+@router.post("/html2word", response_model=TaskResponse)
 async def html_to_word(
     html_paths: List[str],
     output_dir: Optional[str] = None,
@@ -229,7 +226,7 @@ async def html_to_word(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/text-to-word", response_model=TaskResponse)
+@router.post("/text2word", response_model=TaskResponse)
 async def text_to_word(
     request: TextToWordRequest,
     background_tasks: BackgroundTasks,
@@ -287,7 +284,7 @@ async def text_to_word(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/markdown-to-word", response_model=TaskResponse)
+@router.post("/markdown2word", response_model=TaskResponse)
 async def markdown_to_word(
     markdown_path: str,
     output_path: Optional[str] = None,

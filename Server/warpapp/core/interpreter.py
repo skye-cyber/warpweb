@@ -2,9 +2,8 @@ import importlib
 from typing import Dict, Any, Callable
 from pathlib import Path
 import sys
-import logging
-
-logger = logging.getLogger(__name__)
+import os
+from warpapp.utils.logger import logger
 
 
 class OperationInterpreter:
@@ -13,9 +12,9 @@ class OperationInterpreter:
     Supports both direct module imports and CLI-style execution
     """
 
-    def __init__(self):
+    def __init__(self, path: Path = Path(__file__).parent.parent.parent / "filewarp"):
         # Add filewarp to path if needed
-        self.filewarp_path = Path(__file__).parent.parent.parent / "filewarp"
+        self.filewarp_path = Path(path).absolute()
         if self.filewarp_path.exists():
             # sys.path.insert(0, str(self.filewarp_path.parent))
             self._add_to_path()
@@ -32,7 +31,7 @@ class OperationInterpreter:
     def _load_modules_v1(self):
         """Import required FileWarp modules"""
         try:
-            from filewarp.core.document import DocConverter
+            from filewarp.core.document import DocumentConverter
             from filewarp.core.pdf.core import (
                 PageExtractor,
                 PDFCombine,
@@ -56,7 +55,7 @@ class OperationInterpreter:
 
             self.modules = {
                 "document": {
-                    "converter": DocConverter,
+                    "converter": DocumentConverter,
                     "engine": MethodMappingEngine,
                     "directory": DirectoryConverter,
                 },
@@ -85,18 +84,18 @@ class OperationInterpreter:
 
     def _load_modules(self):
         """Import required FileWarp modules with fallbacks"""
-        module_imports = {
+        self.module_imports = {
             "document": [
-                ("filewarp.core.document", "DocConverter"),
-                ("filewarp.converter", "MethodMappingEngine"),
-                ("filewarp.converter", "DirectoryConverter"),
-                ("filewarp.converter", "Batch_Audiofy"),
+                ("filewarp.core.document", "DocumentConverter"),
+                ("filewarp.cli.converter", "MethodMappingEngine"),
+                ("filewarp.cli.converter", "DirectoryConverter"),
+                ("filewarp.cli.converter", "Batch_Audiofy"),
             ],
             "pdf": [
                 ("filewarp.core.pdf.core", "PageExtractor"),
                 ("filewarp.core.pdf.core", "PDFCombine"),
                 ("filewarp.core.pdf.core", "PDF2LongImageConverter"),
-                ("filewarp.core.pdf.core", "_entry_"),
+                ("filewarp.core.pdf.core", "run"),
             ],
             "audio": [
                 ("filewarp.core.audio.core", "AudioConverter"),
@@ -121,19 +120,19 @@ class OperationInterpreter:
             "utils": [("filewarp.utils.file_utils", "generate_filename")],
         }
 
-        for category, imports in module_imports.items():
-            self.modules[category] = {}
+        for category, imports in self.module_imports.items():
+            self.module_imports[category] = {}
             for module_path, class_name in imports:
                 try:
                     module = importlib.import_module(module_path)
                     if hasattr(module, class_name):
-                        self.modules[category][class_name] = getattr(module, class_name)
+                        self.module_imports[category][class_name] = getattr(module, class_name)
                         logger.debug(f"Loaded {class_name} from {module_path}")
                 except ImportError as e:
                     logger.warning(
                         f"Failed to import {class_name} from {module_path}: {e}"
                     )
-                    self.modules[category][class_name] = None
+                    self.module_imports[category][class_name] = None
 
     def _build_operation_map(self):
         """Build mapping of operations to their handler functions"""
@@ -143,7 +142,7 @@ class OperationInterpreter:
             "convert_doc": self._handle_doc_conversion,
             "doc-to-image": self._handle_doc_to_image,
             "doc_to_image": self._handle_doc_to_image,
-            "html-to-word": self._handle_html_to_word,
+            "html2word": self._handle_html_to_word,
             "html_to_word": self._handle_html_to_word,
             "markdown-to-docx": self._handle_markdown_to_docx,
             "markdown_to_docx": self._handle_markdown_to_docx,
@@ -182,7 +181,7 @@ class OperationInterpreter:
             "extract_images": self._handle_extract_images,
             "scan-pdf": self._handle_scan_pdf,
             "scan_pdf": self._handle_scan_pdf,
-            "pdf-to-long-image": self._handle_pdf_to_long_image,
+            "pdf2long-image": self._handle_pdf_to_long_image,
             "pdf_to_long_image": self._handle_pdf_to_long_image,
             "scan-as-image": self._handle_scan_as_image,
             "scan_as_image": self._handle_scan_as_image,
@@ -194,16 +193,15 @@ class OperationInterpreter:
             "convert-svg": self._handle_svg_conversion,
             "convert_svg": self._handle_svg_conversion,
             # Text
-            "text-to-word": self._handle_text_to_word,
+            "text2word": self._handle_text_to_word,
             "text_to_word": self._handle_text_to_word,
             # Voice
             "voice-type": self._handle_voice_type,
             "voice_type": self._handle_voice_type,
         }
 
-    def interpret(self, request: Dict[str, Any]) -> Callable:
+    def interpret(self, operation: Dict[str, Any]) -> Callable:
         """Return the appropriate handler for the request"""
-        operation = request.get("operation")
         if operation not in self.operation_map:
             raise ValueError(f"Unsupported operation: {operation}")
         return self.operation_map[operation]
@@ -211,7 +209,7 @@ class OperationInterpreter:
     def _get_module_attr(self, category: str, attr: str, default=None):
         """Safely get module attribute with fallback"""
         try:
-            return self.modules.get(category, {}).get(attr, default)
+            return self.module_imports.get(category, {}).get(attr, default)
         except Exception:
             return default
 
@@ -269,14 +267,14 @@ class OperationInterpreter:
         input_path = params.get("input_paths", [])[0]
         target_format = params.get("target_format", "png")
 
-        DocConverter = self._get_module_attr("document", "DocConverter")
-        if not DocConverter:
-            raise ImportError("DocConverter not available")
+        DocumentConverter = self._get_module_attr("document", "DocumentConverter")
+        if not DocumentConverter:
+            raise ImportError("DocumentConverter not available")
 
         if progress_callback:
             progress_callback(10, "Initializing document to image conversion")
 
-        conv = DocConverter(input_path)
+        conv = DocumentConverter(input_path)
         result = conv.doc2image(target_format)
 
         if progress_callback:
@@ -311,7 +309,7 @@ class OperationInterpreter:
             )
             result = converter.convert_file(html_file, output)
             results.append(
-                {"input": html_file, "output": str(output) if output else None}
+                {"input": html_file, "output": str(output) if output else result}
             )
 
         return {"results": results}
@@ -590,9 +588,11 @@ class OperationInterpreter:
         """Handle page extraction from PDF"""
         input_path = params.get("input_paths", [])[0]
         pages = params.get("options", {}).get("pages", [])
+        start = params.get("start_page", 1)
+        stop = params.get("stop_page", -1)
 
-        _entry_ = self._get_module_attr("pdf", "_entry_")
-        if not _entry_:
+        PageExtractor = self._get_module_attr("pdf", "PageExtractor")
+        if not PageExtractor:
             raise ImportError("PDF page extraction not available")
 
         if progress_callback:
@@ -600,8 +600,8 @@ class OperationInterpreter:
                 20, f"Extracting pages {pages} from {Path(input_path).name}"
             )
 
-        args = [input_path] + [str(p) for p in pages]
-        result = _entry_(args)
+        # args = [input_path]  + [str(p) for p in pages]
+        result = PageExtractor(input_path, int(start), int(stop)).getPages()
 
         if progress_callback:
             progress_callback(100, "Page extraction complete")

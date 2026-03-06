@@ -1,13 +1,10 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
 from typing import Optional
-import logging
 import json
-
 from warpapp.services.websocket_manager import WebSocketManager
 from warpapp.services.progress_service import ProgressService
 from warpapp.api.dependencies import get_websocket_manager, get_progress_service
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 router = APIRouter(prefix="/api/v1/ws", tags=["websocket"])
 
@@ -48,7 +45,7 @@ async def task_websocket(
             )
         )
 
-    progress_service.progress_manager.get_tracker(task_id)?.register_callback(progress_callback)
+    progress_service.progress_manager.get_tracker(task_id).register_callback(progress_callback)
 
     try:
         # Handle incoming messages

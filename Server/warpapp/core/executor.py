@@ -1,5 +1,4 @@
 import threading
-import logging
 import traceback
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime
@@ -8,8 +7,7 @@ from datetime import datetime
 # sys.path.insert(0, Path(__file__).parent.parent.absolute().as_posix())
 from warpapp.core.interpreter import OperationInterpreter
 from warpapp.models.tasks import TaskModel, TaskStatus
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 
 class OperationExecutor:

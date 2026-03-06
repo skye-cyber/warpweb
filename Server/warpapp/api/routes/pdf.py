@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks
 from typing import Optional
-import logging
 from ...models.requests import (
     ConversionRequest,
     ConversionType,
@@ -15,8 +14,7 @@ from warpapp.core.task_manager import TaskManager
 from warpapp.core.file_handler import FileHandler
 from warpapp.api.dependencies import get_conversion_service, get_task_manager, get_file_handler
 from warpapp.api.dependencies import get_progress_service
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 router = APIRouter(prefix="/api/v1/pdf", tags=["pdf"])
 
@@ -105,7 +103,10 @@ async def extract_pages(
             operation=ConversionType.EXTRACT_PAGES,
             input_paths=[request.pdf_path],
             output_path=request.output_path,
-            options={"pages": request.pages},
+            options={
+                "start_page": request.start_page,
+                "stop_page": request.stop_page,
+            },
         )
 
         # Submit task
@@ -114,8 +115,8 @@ async def extract_pages(
         # Create progress tracker
         tracker = progress_service.create_tracker(
             task_id,
-            total_steps=len(request.pages),
-            description=f"Extracting {len(request.pages)} pages from PDF",
+            total_steps=-1,
+            description=f"Extracting page {request.start_page} to {request.stop_page} from PDF",
         )
         tracker.start()
 
@@ -127,7 +128,7 @@ async def extract_pages(
         return TaskResponse(
             task_id=task_id,
             status="pending",
-            message=f"Extracting pages {request.pages} from PDF",
+            message=f"Extracting page range ({request.start_page} - {request.stop_page}) from PDF",
             created_at=tracker.start_time.isoformat() if tracker.start_time else None,
         )
 
@@ -202,7 +203,7 @@ async def extract_images_from_pdf(
 @router.post("/scan", response_model=TaskResponse)
 async def scan_pdf(
     pdf_path: str,
-    mode: str = Query("standard", enum=["standard", "image", "long"]),
+    mode: str = Query("standard", enum=["standard", "image", "long"], description="Scan strategy"),
     separator: str = Query("\n", description="Text separator"),
     background_tasks: BackgroundTasks = None,
     priority: TaskPriority = Query(TaskPriority.MEDIUM, description="Task priority"),

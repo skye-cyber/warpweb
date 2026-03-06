@@ -1,11 +1,9 @@
 from fastapi import WebSocket, WebSocketDisconnect
 from typing import Dict, Set, Optional, Any
 import asyncio
-import logging
 from datetime import datetime
 from enum import Enum
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 
 class WebSocketMessageType(str, Enum):

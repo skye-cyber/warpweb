@@ -1,12 +1,10 @@
 from typing import Dict, Any, Optional, List
 from pathlib import Path
-import logging
 from ..core.task_manager import TaskManager
 from ..core.file_handler import FileHandler
 from ..models.requests import ConversionRequest, ConversionType
 from ..models.tasks import TaskPriority
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 
 class ConversionService:
@@ -93,16 +91,6 @@ class ConversionService:
                 "supports_directory": False,
                 "description": "Convert audio files between formats",
             },
-            ConversionType.EXTRACT_AUDIO.value: {
-                "name": "Extract Audio",
-                "category": "audio",
-                "input_formats": [".mp4", ".avi", ".mkv", ".mov", ".flv", ".webm"],
-                "output_formats": [".mp3", ".wav", ".ogg", ".m4a"],
-                "requires_target_format": False,
-                "supports_batch": False,
-                "supports_directory": False,
-                "description": "Extract audio from video files",
-            },
             ConversionType.JOIN_AUDIO.value: {
                 "name": "Join Audio",
                 "category": "audio",
@@ -152,6 +140,16 @@ class ConversionService:
                 "supports_batch": False,
                 "supports_directory": False,
                 "description": "Convert video files between formats",
+            },
+            ConversionType.EXTRACT_AUDIO.value: {
+                "name": "Extract Audio",
+                "category": "video",
+                "input_formats": [".mp4", ".avi", ".mkv", ".mov", ".flv", ".webm"],
+                "output_formats": [".mp3", ".wav", ".ogg", ".m4a"],
+                "requires_target_format": False,
+                "supports_batch": False,
+                "supports_directory": False,
+                "description": "Extract audio from video files",
             },
             ConversionType.ANALYZE_VIDEO.value: {
                 "name": "Video Analysis",

@@ -10,7 +10,8 @@ from pydantic import Field, field_validator
 from dotenv import load_dotenv
 
 # Load .env file if present
-load_dotenv('.env')
+ENV_FILE_PATH = (Path(__file__).parent.parent / ".env").absolute()
+load_dotenv(ENV_FILE_PATH)
 
 # Base directories
 BASE_DIR = Path(__file__).parent.parent
@@ -88,7 +89,6 @@ class Settings(BaseSettings):
     @field_validator("CORS_ORIGINS", mode="before")
     def parse_cors_origins(cls, v):
         """Parse CORS origins from string"""
-        print(cls, v)
         if isinstance(v, str):
             return [origin.strip() for origin in v.split(",")]
         return v
@@ -101,7 +101,7 @@ class Settings(BaseSettings):
         return v
 
     class Config:
-        env_file = ".env"
+        env_file = ENV_FILE_PATH
         env_file_encoding = "utf-8"
         case_sensitive = False
         extra = "ignore"
@@ -109,8 +109,6 @@ class Settings(BaseSettings):
 
 # Create global settings instance
 settings = Settings()
-print(f"Final CORS_ORIGINS: {settings.CORS_ORIGINS}")
-
 
 # Logging configuration
 LOGGING_CONFIG = {
@@ -130,7 +128,7 @@ LOGGING_CONFIG = {
         "file": {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "default",
-            "filename": settings.LOG_DIR / "filewarp.log",
+            "filename": settings.LOG_DIR / "filewarp_webserver.log",
             "maxBytes": 10485760,  # 10MB
             "backupCount": 5,
             "level": settings.LOG_LEVEL,

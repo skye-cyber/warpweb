@@ -5,8 +5,6 @@ Provides shared dependencies across the application.
 
 from typing import Optional
 from fastapi import Request, HTTPException, Depends
-import logging
-
 from warpapp.core.task_manager import TaskManager
 from warpapp.core.file_handler import FileHandler
 from warpapp.core.interpreter import OperationInterpreter
@@ -16,8 +14,8 @@ from warpapp.services.websocket_manager import WebSocketManager
 from warpapp.services.notification_service import NotificationService
 from warpapp.services.format_service import FormatService
 from warpapp.config import settings
+from warpapp.utils.logger import logger
 
-logger = logging.getLogger(__name__)
 
 # Singleton instances
 _task_manager: Optional[TaskManager] = None

@@ -1,4 +1,3 @@
-import logging
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Query
 from typing import List, Optional, Dict, Any
 from warpapp.models.requests import ConversionRequest
@@ -10,8 +9,7 @@ from warpapp.core.task_manager import TaskManager
 from warpapp.core.file_handler import FileHandler
 from warpapp.api.dependencies import get_conversion_service, get_task_manager, get_file_handler
 from warpapp.api.dependencies import get_progress_service  # , get_websocket_manager
-
-logger = logging.getLogger(__name__)
+from warpapp.utils.logger import logger
 
 router = APIRouter(prefix="/api/v1/conversion", tags=["conversion"])
 
