@@ -6,8 +6,8 @@ from threading import Lock
 from pathlib import Path
 import logging
 
-from app.core.executor import OperationExecutor
-from app.models.tasks import TaskModel, TaskStatus, TaskPriority, TaskSummary, TaskFilter
+from warpapp.core.executor import OperationExecutor
+from warpapp.models.tasks import TaskModel, TaskStatus, TaskPriority, TaskSummary, TaskFilter
 # from ..models.responses import TaskStatusResponse
 
 logger = logging.getLogger(__name__)

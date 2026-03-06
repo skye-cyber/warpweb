@@ -11,7 +11,7 @@ import logging
 import logging.config
 import uvicorn
 sys.path.insert(0, Path(__file__).parent.parent.absolute().as_posix())
-from app.api.routes import (
+from warpapp.api.routes import (
     conversion_router,
     pdf_router,
     audio_router,
@@ -24,8 +24,8 @@ from app.api.routes import (
     formats_router,
     websocket_router,
 )
-from app.config import settings, LOGGING_CONFIG
-from app.api.dependencies import cleanup_resources
+from warpapp.config import settings, LOGGING_CONFIG
+from warpapp.api.dependencies import cleanup_resources
 
 # Configure logging
 logging.config.dictConfig(LOGGING_CONFIG)

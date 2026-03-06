@@ -129,7 +129,7 @@ class ConversionRequest(BaseModel):
         return v
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "operation": "convert-doc",
                 "input_paths": ["/home/user/document.docx"],

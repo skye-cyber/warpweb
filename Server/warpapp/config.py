@@ -5,11 +5,12 @@ Loads settings from environment variables with defaults.
 
 from pathlib import Path
 from typing import Optional, List
-from pydantic import BaseSettings, Field, validator
+from pydantic_settings import BaseSettings
+from pydantic import Field, field_validator
 from dotenv import load_dotenv
 
 # Load .env file if present
-load_dotenv()
+load_dotenv('.env')
 
 # Base directories
 BASE_DIR = Path(__file__).parent.parent
@@ -37,7 +38,7 @@ class Settings(BaseSettings):
 
     # Security
     SECRET_KEY: str = Field(
-        "filewarp-secret-key-change-in-production", env="SECRET_KEY"
+        "filewarp-secret-key-to-be-changed-in-production", env="SECRET_KEY"
     )
     API_KEY: Optional[str] = Field(None, env="API_KEY")
     ENABLE_AUTH: bool = Field(False, env="ENABLE_AUTH")
@@ -76,7 +77,7 @@ class Settings(BaseSettings):
     ENABLE_CACHE: bool = Field(True, env="ENABLE_CACHE")
     CACHE_TTL: int = Field(300, env="CACHE_TTL")  # 5 minutes
 
-    @validator("UPLOAD_DIR", "OUTPUT_DIR", "LOG_DIR", "TASK_STORAGE_PATH", pre=True)
+    @field_validator("UPLOAD_DIR", "OUTPUT_DIR", "LOG_DIR", "TASK_STORAGE_PATH", mode="before")
     def create_directories(cls, v):
         """Create directories if they don't exist"""
         if v and isinstance(v, (str, Path)):
@@ -84,14 +85,15 @@ class Settings(BaseSettings):
             path.mkdir(parents=True, exist_ok=True)
         return v
 
-    @validator("CORS_ORIGINS", pre=True)
+    @field_validator("CORS_ORIGINS", mode="before")
     def parse_cors_origins(cls, v):
         """Parse CORS origins from string"""
+        print(cls, v)
         if isinstance(v, str):
             return [origin.strip() for origin in v.split(",")]
         return v
 
-    @validator("ALLOWED_EXTENSIONS", pre=True)
+    @field_validator("ALLOWED_EXTENSIONS", mode="before")
     def parse_allowed_extensions(cls, v):
         """Parse allowed extensions from string"""
         if isinstance(v, str):
@@ -102,10 +104,12 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
+        extra = "ignore"
 
 
 # Create global settings instance
 settings = Settings()
+print(f"Final CORS_ORIGINS: {settings.CORS_ORIGINS}")
 
 
 # Logging configuration

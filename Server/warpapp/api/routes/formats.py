@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Optional
 import logging
 
-from app.services.format_service import FormatService
-from app.api.dependencies import get_format_service
+from warpapp.services.format_service import FormatService
+from warpapp.api.dependencies import get_format_service
 
 logger = logging.getLogger(__name__)
 

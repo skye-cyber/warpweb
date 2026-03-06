@@ -11,15 +11,15 @@ from typing import Optional, Dict, Any
 import logging
 from pathlib import Path
 
-from ...models.requests import ConversionRequest, ConversionType, AudioJoinRequest
-from ...models.responses import TaskResponse
-from ...models.tasks import TaskPriority
-from ...services.conversion_service import ConversionService
-from ...services.progress_service import ProgressService
-from ...core.task_manager import TaskManager
-from ...core.file_handler import FileHandler
-from ...dependencies import get_conversion_service, get_task_manager, get_file_handler
-from ...dependencies import get_progress_service
+from warpapp.models.requests import ConversionRequest, ConversionType, AudioJoinRequest
+from warpapp.models.responses import TaskResponse
+from warpapp.models.tasks import TaskPriority
+from warpapp.services.conversion_service import ConversionService
+from warpapp.services.progress_service import ProgressService
+from warpapp.core.task_manager import TaskManager
+from warpapp.core.file_handler import FileHandler
+from warpapp.api.dependencies import get_conversion_service, get_task_manager, get_file_handler
+from warpapp.api.dependencies import get_progress_service
 
 logger = logging.getLogger(__name__)
 

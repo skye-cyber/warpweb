@@ -3,9 +3,9 @@ from typing import Optional
 import logging
 import json
 
-from app.services.websocket_manager import WebSocketManager
-from app.services.progress_service import ProgressService
-from app.api.dependencies import get_websocket_manager, get_progress_service
+from warpapp.services.websocket_manager import WebSocketManager
+from warpapp.services.progress_service import ProgressService
+from warpapp.api.dependencies import get_websocket_manager, get_progress_service
 
 logger = logging.getLogger(__name__)
 

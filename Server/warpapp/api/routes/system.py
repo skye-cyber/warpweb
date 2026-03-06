@@ -4,11 +4,11 @@ import psutil
 import time
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Depends, Query
-from app.core.task_manager import TaskManager
-from app.services.progress_service import ProgressService
-from app.api.dependencies import get_task_manager, get_progress_service
-from app.models.responses import SystemInfoResponse
-from app.models.requests import ConversionType
+from warpapp.core.task_manager import TaskManager
+from warpapp.services.progress_service import ProgressService
+from warpapp.api.dependencies import get_task_manager, get_progress_service
+from warpapp.models.responses import SystemInfoResponse
+from warpapp.models.requests import ConversionType
 
 logger = logging.getLogger(__name__)
 

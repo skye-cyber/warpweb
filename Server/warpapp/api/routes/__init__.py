@@ -1,14 +1,14 @@
-from .conversion import router as conversion_router
-from .pdf import router as pdf_router
-from .audio import router as audio_router
-from .video import router as video_router
-from .image import router as image_router
-from .document import router as document_router
-from .ocr import router as ocr_router
-from .system import router as system_router
-from .tasks import router as tasks_router
-from .formats import router as formats_router
-from .websocket import router as websocket_router
+from warpapp.api.routes.conversion import router as conversion_router
+from warpapp.api.routes.pdf import router as pdf_router
+from warpapp.api.routes.audio import router as audio_router
+from warpapp.api.routes.video import router as video_router
+from warpapp.api.routes.image import router as image_router
+from warpapp.api.routes.document import router as document_router
+from warpapp.api.routes.ocr import router as ocr_router
+from warpapp.api.routes.system import router as system_router
+from warpapp.api.routes.tasks import router as tasks_router
+from warpapp.api.routes.formats import router as formats_router
+from warpapp.api.routes.websocket import router as websocket_router
 
 __all__ = [
     'conversion_router',

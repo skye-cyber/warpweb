@@ -7,15 +7,15 @@ from typing import Optional
 from fastapi import Request, HTTPException, Depends
 import logging
 
-from app.core.task_manager import TaskManager
-from app.core.file_handler import FileHandler
-from app.core.interpreter import OperationInterpreter
-from app.services.conversion_service import ConversionService
-from app.services.progress_service import ProgressService
-from app.services.websocket_manager import WebSocketManager
-from app.services.notification_service import NotificationService
-from app.services.format_service import FormatService
-from app.config import settings
+from warpapp.core.task_manager import TaskManager
+from warpapp.core.file_handler import FileHandler
+from warpapp.core.interpreter import OperationInterpreter
+from warpapp.services.conversion_service import ConversionService
+from warpapp.services.progress_service import ProgressService
+from warpapp.services.websocket_manager import WebSocketManager
+from warpapp.services.notification_service import NotificationService
+from warpapp.services.format_service import FormatService
+from warpapp.config import settings
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,11 @@
 """
 Settings import module for backward compatibility.
-Re-exports settings from app.config.
+Re-exports settings from warpapp.config.
 """
 
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from typing import Optional
-# from app.config import settings
+# from warpapp.config import settings
 
 
 class Settings(BaseSettings):

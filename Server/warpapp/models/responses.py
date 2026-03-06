@@ -20,7 +20,7 @@ class TaskResponse(BaseModel):
     created_at: str
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "task_id": "123e4567-e89b-12d3-a456-426614174000",
                 "status": "pending",
@@ -45,7 +45,7 @@ class TaskStatusResponse(BaseModel):
     error: Optional[str] = None
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "task_id": "123e4567-e89b-12d3-a456-426614174000",
                 "status": "running",
@@ -68,7 +68,7 @@ class OperationResult(BaseModel):
     execution_time: Optional[float] = None
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "success": True,
                 "message": "Conversion completed successfully",
@@ -91,7 +91,7 @@ class FileInfoResponse(BaseModel):
     is_directory: bool
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "name": "document.pdf",
                 "path": "/home/user/document.pdf",
@@ -113,7 +113,7 @@ class FormatInfoResponse(BaseModel):
     examples: List[Dict[str, str]]
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "input_formats": [".pdf", ".docx", ".txt"],
                 "output_formats": [".pdf", ".docx", ".txt", ".jpg"],
@@ -135,7 +135,7 @@ class SystemInfoResponse(BaseModel):
     system_info: Dict[str, Any]
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "version": "1.0.0",
                 "api_version": "v1",
@@ -163,7 +163,7 @@ class ErrorResponse(BaseModel):
     path: Optional[str] = None
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "error": "File not found",
                 "detail": "/path/to/file.pdf does not exist",
@@ -182,7 +182,7 @@ class ValidationErrorResponse(BaseModel):
     timestamp: str
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "errors": [
                     {"field": "input_paths", "message": "Path does not exist"},

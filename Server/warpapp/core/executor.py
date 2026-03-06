@@ -6,8 +6,8 @@ from datetime import datetime
 # import sys
 # from pathlib import Path
 # sys.path.insert(0, Path(__file__).parent.parent.absolute().as_posix())
-from app.core.interpreter import OperationInterpreter
-from app.models.tasks import TaskModel, TaskStatus
+from warpapp.core.interpreter import OperationInterpreter
+from warpapp.models.tasks import TaskModel, TaskStatus
 
 logger = logging.getLogger(__name__)
 

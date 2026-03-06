@@ -3,7 +3,7 @@ API package for FileWarp backend.
 Exposes all route modules for easy import.
 """
 
-from app.api.routes import (
+from warpapp.api.routes import (
     conversion_router,
     pdf_router,
     audio_router,

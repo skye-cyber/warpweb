@@ -12,15 +12,15 @@ import logging
 from pathlib import Path
 import os
 
-from app.models.requests import OCRRequest
-from app.models.responses import TaskResponse
-from app.models.tasks import TaskPriority
-from app.services.conversion_service import ConversionService
-from app.services.progress_service import ProgressService
-from app.core.task_manager import TaskManager
-from app.core.file_handler import FileHandler
-from app.api.dependencies import get_conversion_service, get_task_manager, get_file_handler
-from app.api.dependencies import get_progress_service
+from warpapp.models.requests import OCRRequest
+from warpapp.models.responses import TaskResponse
+from warpapp.models.tasks import TaskPriority
+from warpapp.services.conversion_service import ConversionService
+from warpapp.services.progress_service import ProgressService
+from warpapp.core.task_manager import TaskManager
+from warpapp.core.file_handler import FileHandler
+from warpapp.api.dependencies import get_conversion_service, get_task_manager, get_file_handler
+from warpapp.api.dependencies import get_progress_service
 
 logger = logging.getLogger(__name__)
 
