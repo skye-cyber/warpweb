@@ -35,6 +35,8 @@
     "license": "GPL",
     "author": "skye",
     "main": "index.js",
-    "dependencies": {},
-    "devDependencies": {}
+    "dependencies": {
+        "lucide-react": "^0.577.0",
+        "react-motion": "^0.5.2"
+    }
 }

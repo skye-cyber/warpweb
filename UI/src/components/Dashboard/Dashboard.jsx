@@ -23,7 +23,7 @@ import {
     Mic,
     Film,
     FileSignature
-} from '@mui/icons-material';
+} from 'lucide-react';
 import { countCategoryTools } from '../../config/ToolSchema';
 import { setActiveTab, setActiveTool } from "../../store/warpSlice";
 import { Footer } from "../Footer/Footer";
@@ -156,7 +156,7 @@ export const Dashboard = () => {
             initial="hidden"
             animate="visible"
             variants={containerVariants}
-            className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
+            className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-cyber-950 dark:to-secondary-950"
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
 
@@ -165,10 +165,10 @@ export const Dashboard = () => {
                     variants={itemVariants}
                     className="mb-10 text-center sm:text-left"
                 >
-                    <h1 className="text-4xl sm:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+                    <h1 className="text-4xl sm:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-primary-300 dark:to-accent-400">
                         Welcome Back
                     </h1>
-                    <p className="mt-3 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto sm:mx-0">
+                    <p className="mt-3 text-lg text-gray-600 dark:text-accent-200/80 max-w-2xl mx-auto sm:mx-0">
                         Transform your files with powerful, intuitive tools. Choose a category below to get started.
                     </p>
                 </motion.div>
@@ -183,15 +183,15 @@ export const Dashboard = () => {
                             key={stat.category}
                             variants={cardVariants}
                             whileHover="hover"
-                            className="group relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border border-white/20 dark:border-gray-700/30 shadow-xl hover:shadow-2xl transition-all duration-300"
+                            className="group relative overflow-hidden rounded-2xl bg-white dark:bg-cyber-800/90 backdrop-blur-md border border-gray-200 dark:border-cyber-600 shadow-xl hover:shadow-2xl transition-all duration-300"
                         >
                             {/* Gradient overlay on hover */}
-                            <div className={`absolute inset-0 bg-gradient-to-br from-${stat.color}-500/0 to-${stat.color}-500/0 group-hover:from-${stat.color}-500/10 group-hover:to-${stat.color}-500/5 transition-all duration-500`} />
+                            <div className={`absolute inset-0 bg-gradient-to-br from-${stat.color}-500/0 to-${stat.color}-500/0 group-hover:from-${stat.color}-500/20 group-hover:to-${stat.color}-500/10 dark:group-hover:from-${stat.color}-400/30 dark:group-hover:to-${stat.color}-400/10 transition-all duration-500`} />
 
                             <div className="relative p-6">
                                 <div className="flex items-center gap-4">
-                                    <div className={`p-4 rounded-xl bg-${stat.color}-100 dark:bg-${stat.color}-900/30 group-hover:scale-110 transition-transform duration-300`}>
-                                        <stat.icon className={`w-6 h-6 text-${stat.color}-600 dark:text-${stat.color}-400`} />
+                                    <div className={`p-4 rounded-xl bg-${stat.color}-100 dark:bg-${stat.color}-800/80 shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300`}>
+                                        <stat.icon className={`w-6 h-6 text-${stat.color}-600 dark:text-${stat.color}-300`} />
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -209,7 +209,10 @@ export const Dashboard = () => {
                                 </div>
 
                                 {/* Decorative element */}
-                                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/20 to-transparent rounded-bl-full" />
+                                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/30 to-transparent dark:from-${stat.color}-500/20 dark:to-transparent rounded-bl-full" />
+
+                                {/* Glow effect */}
+                                <div className={`absolute -bottom-10 -right-10 w-24 h-24 bg-${stat.color}-500/10 dark:bg-${stat.color}-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                             </div>
                         </motion.div>
                     ))}
@@ -221,13 +224,13 @@ export const Dashboard = () => {
                     className="space-y-8 mb-12"
                 >
                     <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                            <Zap className="w-6 h-6 text-yellow-500" />
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-primary-200 flex items-center gap-2">
+                            <Zap className="w-6 h-6 text-yellow-500 dark:text-primary-400" />
                             Featured Tools
                         </h2>
                         <motion.button
                             whileHover={{ x: 5 }}
-                            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center gap-1"
+                            className="text-sm text-gray-600 dark:text-accent-300 hover:text-gray-900 dark:hover:text-primary-300 flex items-center gap-1"
                         >
                             View All <ArrowRight className="w-4 h-4" />
                         </motion.button>
@@ -239,7 +242,7 @@ export const Dashboard = () => {
                                 key={category.id}
                                 variants={cardVariants}
                                 whileHover="hover"
-                                className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300"
+                                className="group relative overflow-hidden rounded-2xl bg-white dark:bg-cyber-900 border border-gray-200 dark:border-cyber-700 shadow-lg hover:shadow-2xl transition-all duration-300"
                             >
                                 {/* Gradient header */}
                                 <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${category.gradient}`} />
@@ -248,14 +251,14 @@ export const Dashboard = () => {
                                     {/* Category header */}
                                     <div className="flex items-center justify-between mb-6">
                                         <div className="flex items-center gap-3">
-                                            <div className={`p-3 rounded-xl bg-${category.color}-100 dark:bg-${category.color}-900/30`}>
+                                            <div className={`p-3 rounded-xl bg-${category.color}-100 dark:bg-${category.color}-900/40`}>
                                                 <category.icon className={`w-6 h-6 text-${category.color}-600 dark:text-${category.color}-400`} />
                                             </div>
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-200">
                                                 {category.name}
                                             </h3>
                                         </div>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-medium bg-${category.color}-100 dark:bg-${category.color}-900/30 text-${category.color}-600 dark:text-${category.color}-400`}>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium bg-${category.color}-100 dark:bg-${category.color}-900/40 text-${category.color}-600 dark:text-${category.color}-300`}>
                                             {category.tools.length} tools
                                         </span>
                                     </div>
@@ -268,19 +271,19 @@ export const Dashboard = () => {
                                                 whileHover={{ scale: 1.02 }}
                                                 whileTap={{ scale: 0.98 }}
                                                 onClick={() => handleNavigate(category.path, tool.id)}
-                                                className="group/btn relative overflow-hidden p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-white dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 transition-all duration-300 text-left"
+                                                className="group/btn relative overflow-hidden p-4 rounded-xl bg-gray-50 dark:bg-secondary-900/50 hover:bg-white dark:hover:bg-cyber-800 border border-gray-200 dark:border-cyber-700 transition-all duration-300 text-left"
                                             >
-                                                <div className={`absolute inset-0 bg-gradient-to-r ${category.gradient} opacity-0 group-hover/btn:opacity-5 transition-opacity duration-300`} />
+                                                <div className={`absolute inset-0 bg-gradient-to-r ${category.gradient} opacity-0 group-hover/btn:opacity-5 dark:opacity-0 dark:group-hover/btn:opacity-10 transition-opacity duration-300`} />
 
-                                                <tool.icon className={`w-5 h-5 mb-2 text-${category.color}-500`} />
-                                                <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                                                <tool.icon className={`w-5 h-5 mb-2 text-${category.color}-500 dark:text-${category.color}-400`} />
+                                                <p className="text-sm font-medium text-gray-900 dark:text-primary-200 mb-1">
                                                     {tool.name}
                                                 </p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                <p className="text-xs text-gray-500 dark:text-accent-300/70">
                                                     {tool.description}
                                                 </p>
 
-                                                <ArrowRight className={`absolute bottom-3 right-3 w-4 h-4 text-${category.color}-500 opacity-0 group-hover/btn:opacity-100 transform translate-x-2 group-hover/btn:translate-x-0 transition-all duration-300`} />
+                                                <ArrowRight className={`absolute bottom-3 right-3 w-4 h-4 text-${category.color}-500 dark:text-${category.color}-400 opacity-0 group-hover/btn:opacity-100 transform translate-x-2 group-hover/btn:translate-x-0 transition-all duration-300`} />
                                             </motion.button>
                                         ))}
                                     </div>
@@ -293,23 +296,23 @@ export const Dashboard = () => {
                 {/* Recent Activity with modern design */}
                 <motion.div
                     variants={itemVariants}
-                    className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 p-8 mb-8"
+                    className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-cyber-950 dark:to-secondary-950 p-8 border dark:border-cyber-800/50"
                 >
                     {/* Background pattern */}
-                    <div className="absolute inset-0 opacity-10">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-3xl" />
-                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/20 to-transparent rounded-full blur-3xl" />
+                    <div className="absolute inset-0 opacity-10 dark:opacity-5">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/20 to-transparent dark:from-primary-500/10 dark:to-transparent rounded-full blur-3xl" />
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/20 to-transparent dark:from-accent-500/10 dark:to-transparent rounded-full blur-3xl" />
                     </div>
 
                     <div className="relative">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                                <Activity className="w-5 h-5" />
+                            <h2 className="text-xl font-semibold text-gray-800 dark:text-primary-200 flex items-center gap-2">
+                                <Activity className="w-5 h-5 dark:text-primary-400" />
                                 Recent Activity
                             </h2>
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
-                                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors"
+                                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 dark:bg-cyber-800 dark:hover:bg-cyber-700 text-gray-800 dark:text-primary-200 text-sm font-medium transition-colors border dark:border-cyber-700"
                             >
                                 View History
                             </motion.button>
@@ -328,10 +331,10 @@ export const Dashboard = () => {
                                 }}
                                 className="mb-4"
                             >
-                                <Clock className="w-16 h-16 text-white/30" />
+                                <Clock className="w-16 h-16 text-gray-400 dark:text-accent-500/30" />
                             </motion.div>
-                            <p className="text-lg text-white/70 mb-2">No recent activity</p>
-                            <p className="text-sm text-white/50 max-w-md">
+                            <p className="text-lg text-gray-800 dark:text-primary-200/90 mb-2">No recent activity</p>
+                            <p className="text-sm text-gray-600 dark:text-accent-300/70 max-w-md">
                                 Your recent file conversions and edits will appear here. Start using the tools to see your activity!
                             </p>
 
@@ -339,7 +342,7 @@ export const Dashboard = () => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleNavigate('/documents', 'convert_doc')}
-                                className="mt-6 px-6 py-3 bg-white text-gray-900 rounded-xl font-medium hover:bg-gray-100 transition-colors flex items-center gap-2"
+                                className="mt-6 px-6 py-3 bg-white dark:bg-primary-600 text-gray-900 dark:text-white rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-primary-500 transition-colors flex items-center gap-2 shadow-lg dark:shadow-primary-900/30"
                             >
                                 <FileUp className="w-5 h-5" />
                                 Start Converting
@@ -351,7 +354,7 @@ export const Dashboard = () => {
                 {/* Quick Actions Bar */}
                 <motion.div
                     variants={itemVariants}
-                    className="flex flex-wrap gap-3 justify-center sm:justify-start"
+                    className="flex flex-wrap gap-3 mt-4 justify-center sm:justify-start"
                 >
                     {[
                         { icon: Download, label: 'Downloads', color: 'blue' },
@@ -363,7 +366,7 @@ export const Dashboard = () => {
                             key={action.label}
                             whileHover={{ y: -2 }}
                             whileTap={{ scale: 0.95 }}
-                            className={`px-4 py-2 rounded-xl bg-${action.color}-50 dark:bg-${action.color}-900/20 text-${action.color}-600 dark:text-${action.color}-400 hover:bg-${action.color}-100 dark:hover:bg-${action.color}-900/30 transition-colors flex items-center gap-2 text-sm font-medium`}
+                            className={`px-4 py-2 rounded-xl bg-${action.color}-50 dark:bg-${action.color}-900/30 text-${action.color}-600 dark:text-${action.color}-300 hover:bg-${action.color}-100 dark:hover:bg-${action.color}-900/50 transition-colors flex items-center gap-2 text-sm font-medium border dark:border-${action.color}-800/30`}
                         >
                             <action.icon className="w-4 h-4" />
                             {action.label}
