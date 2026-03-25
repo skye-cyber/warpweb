@@ -11,7 +11,7 @@ from warpapp.api.dependencies import get_conversion_service, get_task_manager, g
 from warpapp.api.dependencies import get_progress_service  # , get_websocket_manager
 from warpapp.utils.logger import logger
 
-router = APIRouter(prefix="/api/v1/conversion", tags=["conversion"])
+router = APIRouter(prefix="/conversion", tags=["conversion"])
 
 
 @router.post("/submit", response_model=TaskResponse)

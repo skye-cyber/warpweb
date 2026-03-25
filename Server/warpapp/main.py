@@ -91,7 +91,7 @@ if settings.OUTPUT_DIR.exists():
     )
 
 
-@app.get("/")
+@app.get(f"/{settings.API_V1_PREFIX}/")
 async def root():
     """Root endpoint with API information"""
     return {
@@ -99,11 +99,11 @@ async def root():
         "version": settings.API_VERSION,
         "description": settings.API_DESCRIPTION,
         "docs": "/docs" if settings.DEBUG else None,
-        "health": "/api/v1/system/health",
+        "health": f"/{settings.API_V1_PREFIX}/system/health",
     }
 
 
-@app.get("/health")
+@app.get(f"/{settings.API_V1_PREFIX}/health")
 async def health_check():
     """Simple health check endpoint"""
     return {"status": "healthy", "version": settings.API_VERSION}

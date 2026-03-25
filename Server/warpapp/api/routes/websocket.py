@@ -6,7 +6,7 @@ from warpapp.services.progress_service import ProgressService
 from warpapp.api.dependencies import get_websocket_manager, get_progress_service
 from warpapp.utils.logger import logger
 
-router = APIRouter(prefix="/api/v1/ws", tags=["websocket"])
+router = APIRouter(prefix="/ws", tags=["websocket"])
 
 
 @router.websocket("/task/{task_id}")

@@ -11,7 +11,7 @@ from warpapp.models.responses import SystemInfoResponse
 from warpapp.models.requests import ConversionType
 from warpapp.utils.logger import logger
 
-router = APIRouter(prefix="/api/v1/system", tags=["system"])
+router = APIRouter(prefix="/system", tags=["system"])
 
 # Track server start time
 SERVER_START_TIME = time.time()

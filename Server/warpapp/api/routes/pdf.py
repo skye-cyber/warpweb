@@ -16,7 +16,7 @@ from warpapp.api.dependencies import get_conversion_service, get_task_manager, g
 from warpapp.api.dependencies import get_progress_service
 from warpapp.utils.logger import logger
 
-router = APIRouter(prefix="/api/v1/pdf", tags=["pdf"])
+router = APIRouter(prefix="/pdf", tags=["pdf"])
 
 
 @router.post("/join", response_model=TaskResponse)

@@ -12,7 +12,7 @@ from warpapp.api.dependencies import get_conversion_service, get_task_manager, g
 from warpapp.api.dependencies import get_progress_service
 from warpapp.utils.logger import logger
 
-router = APIRouter(prefix="/api/v1/document", tags=["document"])
+router = APIRouter(prefix="/document", tags=["document"])
 
 
 @router.post("/convert", response_model=TaskResponse)
