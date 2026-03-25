@@ -17,7 +17,7 @@ import {
     ChevronDown,
     Sliders,
     Mic,
-    Equalizer,
+//     Equalizer,
     Box,
     Layers,
     Film,
@@ -737,7 +737,7 @@ export const AudioEffects = ({ effects = [], isOpen, onToggle, color = 'green' }
         noiseReduce: Mic,
         normalize: Waves,
         compressor: Gauge,
-        equalizer: Equalizer
+        equalizer: Mic, //Equalizer
     };
 
     return (

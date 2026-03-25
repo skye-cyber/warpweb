@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create axios instance with base URL (use the full server URL without path prefix)
 const api = axios.create({
-  baseURL: "http://localhost:8008", // adjust to your server address
+  baseURL: "http://localhost:8000", // adjust to your server address
 });
 
 // Add request interceptor for auth tokens if needed
