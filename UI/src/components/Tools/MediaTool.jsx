@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
     FileText,
     X,
@@ -18,6 +18,7 @@ import { colorSystem, containerVariants, itemVariants, fileTypeIcons } from './u
 import { DropZone } from './DropZone';
 import { conversionService } from '../../services/api';
 import { pdfService } from '../../services/api';
+import { categoryIcons } from './utils/utils';
 
 // Main MediaTool Component
 export const MediaTool = () => {
