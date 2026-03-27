@@ -284,29 +284,6 @@ export const Converter = ({ }) => {
                     </div>
                 </motion.div>
             </div>
-
-            {/* Custom Scrollbar Styles */}
-            <style jsx>{`
-                .scrollbar-custom::-webkit-scrollbar {
-                    width: 6px;
-                }
-                .scrollbar-custom::-webkit-scrollbar-track {
-                    background: transparent;
-                }
-                .scrollbar-custom::-webkit-scrollbar-thumb {
-                    background: #cbd5e1;
-                    border-radius: 3px;
-                }
-                .dark .scrollbar-custom::-webkit-scrollbar-thumb {
-                    background: #334155;
-                }
-                .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-                    background: #94a3b8;
-                }
-                .dark .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-                    background: #475569;
-                }
-                `}</style>
         </div>
     );
 };

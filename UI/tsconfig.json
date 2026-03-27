@@ -1,15 +1,27 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",      // Vite prefers over CommonJS
-    "jsx": "react-jsx",      // Critical for React
-    "moduleResolution": "bundler",  // Vite 5+ optimized
+    "module": "ESNext",
+    "jsx": "react-jsx",           // React 17+ automatic runtime
+    "moduleResolution": "bundler", // Vite's module resolution
     "allowImportingTsExtensions": true,
-    //"outDir": "./electron",
-    "rootDir": "src",
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "declaration": true,          // Generate .d.ts files
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "noEmit": true          // Let Vite emit, tsc just checks
-  }
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "types": ["react", "react-dom", "vite/client", "node"], // Add vite/client
+    "declarationDir": "./src/types",
+    "noEmit": true                // Let Vite handle transpilation
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["./src/types", "node_modules"]
 }
