@@ -1,4 +1,4 @@
-import { colorSystem } from "./utils/utils";
+import { colorSystem, colorSystemType } from "./utils/utils";
 import {
     Cloud,
     Trash2,
@@ -6,7 +6,7 @@ import {
 } from "lucide-react"
 import { motion } from 'framer-motion';
 import { FileList } from "./FileList";
-import { useRef } from "react";
+import { ChangeEventHandler, DragEvent, useRef } from "react";
 
 // DropZone Component
 export const DropZone = ({
@@ -19,25 +19,38 @@ export const DropZone = ({
     dropzoneSubtext,
     color,
     accepts
-}) => {
+}:
+    {
+        isDragging: boolean,
+        files: Array<any>,
+        onDrop: CallableFunction,
+        onFileChange: ChangeEventHandler | CallableFunction,
+        onClear: (...args: any[]) => {},
+        dropzoneText: string,
+        dropzoneSubtext: string,
+        color: keyof colorSystemType,
+        accepts: string
+
+    }) => {
     const fileInputRef = useRef(null);
     const colors = colorSystem[color] || colorSystem.green;
 
-    const handleDragOver = (e) => {
+    const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         onDrop?.(true);
     };
 
-    const handleDragLeave = (e) => {
+    const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         onDrop?.(false);
     };
 
-    const handleDrop = (e) => {
+    const handleDrop = (e: DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         onDrop?.(false);
         const droppedFiles = Array.from(e.dataTransfer.files);
-        onFileChange?.({ target: { files: droppedFiles } });
+        const onFileChangCallback: CallableFunction = onFileChange
+        onFileChangCallback?.({ target: { files: droppedFiles } });
     };
 
     return (
@@ -63,7 +76,7 @@ export const DropZone = ({
                 multiple
                 accept={accepts}
                 className="hidden"
-                onChange={onFileChange}
+                onChange={onFileChange as ChangeEventHandler}
             />
 
             {files.length === 0 ? (
@@ -111,7 +124,7 @@ export const DropZone = ({
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onClear?.();
+                                onClear?.(-1);
                             }}
                             className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors flex items-center gap-1"
                         >

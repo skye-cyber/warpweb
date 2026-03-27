@@ -1,9 +1,15 @@
-import { colorSystem } from "./utils/utils";
+import { colorSystem, colorSystemType } from "./utils/utils";
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileIcon } from "./FileIconHelper";
+import { X } from "lucide-react";
 
 // File List Component
-export const FileList = ({ files, onRemove, color }) => {
+export const FileList = ({ files, onRemove, color }:
+    {
+        files: Array<any>,
+        onRemove: CallableFunction,
+        color: keyof colorSystemType
+    }) => {
     const colors = colorSystem[color] || colorSystem.green;
 
     return (

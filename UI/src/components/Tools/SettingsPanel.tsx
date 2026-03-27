@@ -1,37 +1,51 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Music,
     Waves,
     Gauge,
     Image,
-    FileJson,
     FileText,
-    FileSpreadsheet,
     Video,
     Volume2,
-    Palette,
-    Ruler,
     Languages,
-    ScanLine,
     ChevronDown,
     Sliders,
     Mic,
-//     Equalizer,
     Box,
     Layers,
     Film,
-    Captions,
     Combine,
-    Crop,
     RotateCw,
     Sun,
-    Moon,
-    Sparkles
+    Sparkles,
+    LucideProps
 } from 'lucide-react';
+import { ForwardRefExoticComponent, MouseEventHandler } from 'react';
+
+interface colorMap {
+    bg: string
+    border: string
+    text: string
+    icon: string
+    ring: string
+    focus: string
+    hover: string
+}
+
+interface themeMapType {
+    light: colorMap
+    dark: colorMap
+}
+
+interface colorSystemType {
+    green: themeMapType
+    red: themeMapType
+    blue: themeMapType
+    purple: themeMapType
+}
 
 // Color system (same as in MediaTool)
-const colorSystem = {
+const colorSystem: colorSystemType = {
     green: {
         light: {
             bg: 'bg-green-50',
@@ -116,7 +130,7 @@ const colorSystem = {
 
 // Base input class generator
 const getInputClass = (color = 'green') => {
-    const colors = colorSystem[color] || colorSystem.green;
+    const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
     return `
     w-full p-3 rounded-xl border
     ${colors.light.border} ${colors.dark.border}
@@ -128,10 +142,31 @@ const getInputClass = (color = 'green') => {
     `;
 };
 
+interface RendererSettingsType {
+    format: (...args: any[]) => JSX.Element
+    bitrate: (...args: any[]) => JSX.Element
+    sampleRate: (...args: any[]) => JSX.Element
+    imageFormat: (...args: any[]) => JSX.Element
+    quality: (...args: any[]) => JSX.Element
+    pageSize: (...args: any[]) => JSX.Element
+    orientation: (...args: any[]) => JSX.Element
+    language: (...args: any[]) => JSX.Element
+    preserveFormatting: (...args: any[]) => JSX.Element
+    intensity: (...args: any[]) => JSX.Element
+    docFormat: (...args: any[]) => JSX.Element
+    pageRange: (...args: any[]) => JSX.Element
+    mergeOrder: (...args: any[]) => JSX.Element
+    compressionLevel: (...args: any[]) => JSX.Element
+    videoFormat: (...args: any[]) => JSX.Element
+    videoQuality: (...args: any[]) => JSX.Element
+    resolution: (...args: any[]) => JSX.Element
+    targetSize: (...args: any[]) => JSX.Element
+}
+
 // Setting renderers
-const settingRenderers = {
+const settingRenderers: RendererSettingsType = {
     // Audio settings
-    format: ({ category, color }) => (
+    format: ({ category, color }: { category: string, color: string }) => (
         <motion.div
             key="format"
             initial={{ opacity: 0, y: 10 }}
@@ -183,7 +218,7 @@ const settingRenderers = {
         </motion.div>
     ),
 
-    bitrate: ({ color }) => (
+    bitrate: ({ color }: { color: string }) => (
         <motion.div
             key="bitrate"
             initial={{ opacity: 0, y: 10 }}
@@ -203,7 +238,7 @@ const settingRenderers = {
         </motion.div>
     ),
 
-    sampleRate: ({ color }) => (
+    sampleRate: ({ color }: { color: string }) => (
         <motion.div
             key="sampleRate"
             initial={{ opacity: 0, y: 10 }}
@@ -223,7 +258,7 @@ const settingRenderers = {
     ),
 
     // Image settings
-    imageFormat: ({ color }) => (
+    imageFormat: ({ color }: { color: string }) => (
         <motion.div
             key="imageFormat"
             initial={{ opacity: 0, y: 10 }}
@@ -244,8 +279,8 @@ const settingRenderers = {
         </motion.div>
     ),
 
-    quality: ({ color }) => {
-        const colors = colorSystem[color] || colorSystem.green;
+    quality: ({ color }: { color: string }) => {
+        const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
         return (
             <motion.div
                 key="quality"
@@ -277,7 +312,7 @@ const settingRenderers = {
         );
     },
 
-    pageSize: ({ color }) => (
+    pageSize: ({ color }: { color: string }) => (
         <motion.div
             key="pageSize"
             initial={{ opacity: 0, y: 10 }}
@@ -296,7 +331,7 @@ const settingRenderers = {
         </motion.div>
     ),
 
-    orientation: ({ color }) => (
+    orientation: ({ color }: { color: string }) => (
         <motion.div
             key="orientation"
             initial={{ opacity: 0, y: 10 }}
@@ -314,7 +349,7 @@ const settingRenderers = {
         </motion.div>
     ),
 
-    language: ({ color }) => (
+    language: ({ color }: { color: string }) => (
         <motion.div
             key="language"
             initial={{ opacity: 0, y: 10 }}
@@ -334,8 +369,8 @@ const settingRenderers = {
         </motion.div>
     ),
 
-    preserveFormatting: ({ color }) => {
-        const colors = colorSystem[color] || colorSystem.green;
+    preserveFormatting: ({ color }: { color: string }) => {
+        const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
         return (
             <motion.div
                 key="preserveFormatting"
@@ -359,8 +394,8 @@ const settingRenderers = {
         );
     },
 
-    intensity: ({ color }) => {
-        const colors = colorSystem[color] || colorSystem.green;
+    intensity: ({ color }: { color: string }) => {
+        const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
         return (
             <motion.div
                 key="intensity"
@@ -393,7 +428,7 @@ const settingRenderers = {
     },
 
     // Document settings
-    docFormat: ({ color }) => (
+    docFormat: ({ color }: { color: string }) => (
         <motion.div
             key="docFormat"
             initial={{ opacity: 0, y: 10 }}
@@ -414,7 +449,7 @@ const settingRenderers = {
         </motion.div>
     ),
 
-    pageRange: ({ color }) => (
+    pageRange: ({ color }: { color: string }) => (
         <motion.div
             key="pageRange"
             initial={{ opacity: 0, y: 10 }}
@@ -434,8 +469,8 @@ const settingRenderers = {
         </motion.div>
     ),
 
-    mergeOrder: ({ color }) => {
-        const colors = colorSystem[color] || colorSystem.green;
+    mergeOrder: ({ color }: { color: string }) => {
+        const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
         return (
             <motion.div
                 key="mergeOrder"
@@ -454,7 +489,7 @@ const settingRenderers = {
         );
     },
 
-    compressionLevel: ({ color }) => (
+    compressionLevel: ({ color }: { color: string }) => (
         <motion.div
             key="compressionLevel"
             initial={{ opacity: 0, y: 10 }}
@@ -474,7 +509,7 @@ const settingRenderers = {
     ),
 
     // Video settings
-    videoFormat: ({ color }) => (
+    videoFormat: ({ color }: { color: string }) => (
         <motion.div
             key="videoFormat"
             initial={{ opacity: 0, y: 10 }}
@@ -495,7 +530,7 @@ const settingRenderers = {
         </motion.div>
     ),
 
-    videoQuality: ({ color }) => (
+    videoQuality: ({ color }: { color: string }) => (
         <motion.div
             key="videoQuality"
             initial={{ opacity: 0, y: 10 }}
@@ -514,7 +549,7 @@ const settingRenderers = {
         </motion.div>
     ),
 
-    resolution: ({ color }) => (
+    resolution: ({ color }: { color: string }) => (
         <motion.div
             key="resolution"
             initial={{ opacity: 0, y: 10 }}
@@ -534,7 +569,7 @@ const settingRenderers = {
         </motion.div>
     ),
 
-    targetSize: ({ color }) => (
+    targetSize: ({ color }: { color: string }) => (
         <motion.div
             key="targetSize"
             initial={{ opacity: 0, y: 10 }}
@@ -558,25 +593,33 @@ const settingRenderers = {
 };
 
 // Main SettingsPanel component
-export const SettingsPanel = ({ settings = [], category, color = 'green' }) => {
+export const SettingsPanel = ({ settings = [], category, color = 'green' }: { settings: Array<any>, category: string, color: string }) => {
     if (!settings.length) return null;
 
     const cols = settings.length > 2 ? 'md:grid-cols-3' : settings.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-1';
 
     return (
         <div className={`grid grid-cols-1 ${cols} gap-6`}>
-            {settings.map(setting => {
+            {settings.map((setting: keyof RendererSettingsType) => {
                 const renderer = settingRenderers[setting];
-                return renderer ? renderer({ category, color }) : null;
+            return renderer ? renderer({category, color}) : null;
             })}
         </div>
     );
 };
 
+interface AdancedRenderType {
+    resize: (...args: any[]) => JSX.Element
+    codec: (...args: any[]) => JSX.Element
+    fps: (...args: any[]) => JSX.Element
+    ocr: (...args: any[]) => JSX.Element
+    metadata: (...args: any[]) => JSX.Element
+}
+
 // Advanced option renderers
-const advancedRenderers = {
-    resize: ({ color }) => {
-        const colors = colorSystem[color] || colorSystem.green;
+const advancedRenderers: AdancedRenderType = {
+    resize: ({ color }: { color: string }) => {
+        const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
         return (
             <div key="resize" className="grid grid-cols-3 gap-4">
                 <div>
@@ -610,7 +653,7 @@ const advancedRenderers = {
         );
     },
 
-    codec: ({ color }) => (
+    codec: ({ color }: { color: string }) => (
         <div key="codec">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Video Codec</label>
             <select name="codec" className={getInputClass(color)}>
@@ -622,7 +665,7 @@ const advancedRenderers = {
         </div>
     ),
 
-    fps: ({ color }) => (
+    fps: ({ color }: { color: string }) => (
         <div key="fps">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Frame Rate (FPS)</label>
             <select name="fps" className={getInputClass(color)}>
@@ -634,8 +677,8 @@ const advancedRenderers = {
         </div>
     ),
 
-    ocr: ({ color }) => {
-        const colors = colorSystem[color] || colorSystem.green;
+    ocr: ({ color }: { color: string }) => {
+        const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
         return (
             <div key="ocr" className="flex items-center space-x-2">
                 <input
@@ -654,8 +697,8 @@ const advancedRenderers = {
         );
     },
 
-    metadata: ({ color }) => {
-        const colors = colorSystem[color] || colorSystem.green;
+    metadata: ({ color }: { color: string }) => {
+        const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
         return (
             <div key="metadata" className="flex items-center space-x-2">
                 <input
@@ -676,8 +719,8 @@ const advancedRenderers = {
 };
 
 // AdvancedOptions component
-export const AdvancedOptions = ({ advanced = [], category, isOpen, onToggle, color = 'green' }) => {
-    const colors = colorSystem[color] || colorSystem.green;
+export const AdvancedOptions = ({ advanced = [], category, isOpen, onToggle, color = 'green' }: { advanced: Array<any>, isOpen: boolean, onToggle: MouseEventHandler, category: string, color: string }) => {
+    const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
 
     if (!advanced.length) return null;
 
@@ -708,7 +751,7 @@ export const AdvancedOptions = ({ advanced = [], category, isOpen, onToggle, col
                         className="p-4 bg-white dark:bg-cyber-800/50 border-t border-gray-200 dark:border-cyber-700"
                     >
                         <div className="space-y-4">
-                            {advanced.map(option => {
+                            {advanced.map((option: keyof AdancedRenderType) => {
                                 const renderer = advancedRenderers[option];
                                 return renderer ? renderer({ color }) : null;
                             })}
@@ -721,19 +764,33 @@ export const AdvancedOptions = ({ advanced = [], category, isOpen, onToggle, col
 };
 
 // AudioEffects component
-export const AudioEffects = ({ effects = [], isOpen, onToggle, color = 'green' }) => {
-    const colors = colorSystem[color] || colorSystem.green;
+export const AudioEffects = ({ effects = [], isOpen, onToggle, color = 'green' }: { effects: Array<any>, isOpen: boolean, onToggle: MouseEventHandler, color: string }) => {
+    const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
 
     if (!effects.length) return null;
 
-    const effectLabels = {
+    interface effectLabelType {
+        noiseReduce: string
+        normalize: string
+        compressor: string
+        equalizer: string
+    }
+
+    const effectLabels: effectLabelType = {
         noiseReduce: 'Noise Reduce',
         normalize: 'Normalize',
         compressor: 'Compressor',
         equalizer: 'Equalizer'
     };
 
-    const effectIcons = {
+    interface effectIconType {
+        noiseReduce: ForwardRefExoticComponent<Omit<LucideProps, "ref">>
+        normalize: ForwardRefExoticComponent<Omit<LucideProps, "ref">>
+        compressor: ForwardRefExoticComponent<Omit<LucideProps, "ref">>
+        equalizer: ForwardRefExoticComponent<Omit<LucideProps, "ref">>
+    }
+
+    const effectIcons: effectIconType = {
         noiseReduce: Mic,
         normalize: Waves,
         compressor: Gauge,
@@ -767,7 +824,7 @@ export const AudioEffects = ({ effects = [], isOpen, onToggle, color = 'green' }
                         className="p-4 bg-white dark:bg-cyber-800/50 border-t border-gray-200 dark:border-cyber-700"
                     >
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {effects.map((effect) => {
+                            {effects.map((effect: keyof effectIconType) => {
                                 const Icon = effectIcons[effect];
                                 return (
                                     <label key={effect} className="flex items-center space-x-2 cursor-pointer group">

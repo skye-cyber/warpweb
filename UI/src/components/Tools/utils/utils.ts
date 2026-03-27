@@ -7,10 +7,51 @@ import {
     FileVideo,
     FileAudio,
     FileDigit,
+    LucideProps
 } from 'lucide-react';
+import { ForwardRefExoticComponent } from 'react';
+
+export interface colorMapLight {
+    bg: string
+    border: string
+    text: string
+    icon: string
+    ring: string
+    focus: string
+    hover: string
+    badge: string
+    shadow: string
+    button: string
+    gradient: string
+}
+
+export interface colorMapDark {
+    bg: string
+    border: string
+    text: string
+    icon: string
+    ring: string
+    focus: string
+    hover: string
+    badge: string
+    button: string
+    gradient: string
+}
+
+export interface themeMapType {
+    light: colorMapLight
+    dark: colorMapDark
+}
+
+export interface colorSystemType {
+    green: themeMapType
+    red: themeMapType
+    blue: themeMapType
+    purple: themeMapType
+}
 
 // Color system based on your palette
-export const colorSystem = {
+export const colorSystem: colorSystemType = {
     green: {
         light: {
             bg: 'bg-green-50',
@@ -143,17 +184,32 @@ export const itemVariants = {
     }
 };
 
+export interface fileTypeIconsType {
+    default: typeof File,
+    audio: ForwardRefExoticComponent<Omit<LucideProps, "ref">>,
+    image: ForwardRefExoticComponent<Omit<LucideProps, "ref">>,
+    video: ForwardRefExoticComponent<Omit<LucideProps, "ref">>,
+    document: ForwardRefExoticComponent<Omit<LucideProps, "ref">>
+}
+
 // File type icon mapping
-export const fileTypeIcons = {
+export const fileTypeIcons: fileTypeIconsType = {
     default: File,
-        audio: FileAudio,
-        image: FileImage,
-        video: FileVideo,
-        document: FileDigit
+    audio: FileAudio,
+    image: FileImage,
+    video: FileVideo,
+    document: FileDigit
 };
 
+export interface categoryIconType {
+    audios: ForwardRefExoticComponent<Omit<LucideProps, "ref">>,
+    images: ForwardRefExoticComponent<Omit<LucideProps, "ref">>,
+    documents: ForwardRefExoticComponent<Omit<LucideProps, "ref">>,
+    videos: ForwardRefExoticComponent<Omit<LucideProps, "ref">>
+}
+
 // Category icon mapping
-export const categoryIcons = {
+export const categoryIcons: categoryIconType = {
     audios: Music,
     images: ImageIcon,
     documents: FileText,
