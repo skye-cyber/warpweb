@@ -7,8 +7,8 @@ import {
 } from "lucide-react"
 
 // File Icon Helper
-export const FileIcon = ({ file, className }) => {
-    const ext = file.name.split('.').pop()?.toLowerCase();
+export const FileIcon = ({ file, className }: {file: typeof File, className: string}): JSX.Element => {
+    const ext: string = file.name.split('.').pop()?.toLowerCase() || '';
 
     if (['mp3', 'wav', 'flac', 'm4a', 'aac'].includes(ext)) {
         return <FileAudio className={className} />;

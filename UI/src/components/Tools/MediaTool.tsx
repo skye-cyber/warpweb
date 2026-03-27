@@ -1,7 +1,7 @@
 /// <referenc="../../../types/*"
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import {
     FileText,
     X,
@@ -14,7 +14,7 @@ import {
 import { TOOLS } from '../../config/ToolSchema';
 import { SettingsPanel, AdvancedOptions, AudioEffects } from './SettingsPanel';
 import { getFirstToolByCategory } from '../../config/ToolSchema';
-import { colorSystem, containerVariants, itemVariants } from './utils/utils';
+import { categoryIconType, colorSystem, containerVariants, itemVariants } from './utils/utils';
 import { DropZone } from './DropZone';
 import {
     conversionService,
@@ -34,9 +34,10 @@ import type {
     OCRRequest,
     TextToWordRequest,
     VideoAnalysisRequest,
-    TaskPriority,
-    ConversionType
-} from '../../types/filewarp';
+    TaskPriority as TaskPriorityType
+} from '../../services/types/api';
+import { ConversionType, TaskPriority } from '../../services/types/api.d';
+import { colorSystemType } from './utils/utils';
 
 // Map tool IDs to API operations
 const toolToOperationMap: Record<string, ConversionType> = {
@@ -77,7 +78,7 @@ const toolToOperationMap: Record<string, ConversionType> = {
 };
 
 // Map categories to their respective services
-const categoryServiceMap = {
+export const categoryServiceMap = {
     pdf: pdfService,
     audios: audioService,
     videos: videoService,
@@ -116,17 +117,18 @@ export const MediaTool = () => {
 //         submitIcon
     } = config;
 
-    const colors = colorSystem[color] || colorSystem.green;
-    const CategoryIcon = categoryIcons[category] || FileText;
+    const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
+    const CategoryIcon = categoryIcons[category as keyof categoryIconType] || FileText;
 
     // Prepare form data for submission
     const prepareRequestData = (formData: FormData): any => {
         const operation = toolToOperationMap[toolId];
-        const inputPaths = files.map(file => file.path || URL.createObjectURL(file));
+        const inputPaths = files.map((file: any) => file.path || URL.createObjectURL(file));
+        const settings = formData
 
         // Get settings from form
         const settingsData: Record<string, any> = {};
-        settings.forEach(setting => {
+        settings.forEach((setting: any) => {
             const value = formData.get(setting.name);
             if (value) {
                 settingsData[setting.name] = setting.type === 'number' ? Number(value) : value;
@@ -135,7 +137,7 @@ export const MediaTool = () => {
 
         // Get advanced options
         const advancedData: Record<string, any> = {};
-        advanced.forEach(option => {
+        advanced.forEach((option: any) => {
             const value = formData.get(option.name);
             if (value) {
                 advancedData[option.name] = option.type === 'number' ? Number(value) : value;
@@ -144,7 +146,7 @@ export const MediaTool = () => {
 
         // Get audio effects
         const effectsData: Record<string, any> = {};
-        effects.forEach(effect => {
+        effects.forEach((effect: any) => {
             const value = formData.get(effect.name);
             if (value) {
                 effectsData[effect.name] = effect.type === 'number' ? Number(value) : value;
@@ -288,7 +290,7 @@ export const MediaTool = () => {
         try {
             const formData = new FormData(e.currentTarget);
             const requestData = prepareRequestData(formData);
-            const priority = (formData.get('priority') as TaskPriority) || TaskPriority.MEDIUM;
+            const priority = (formData.get('priority') as TaskPriorityType) || TaskPriority.MEDIUM;
 
             console.log('Submitting to API:', {
                 toolId,
@@ -300,7 +302,7 @@ export const MediaTool = () => {
             let response;
 
             // Route to appropriate service based on category and operation
-            switch (category) {
+            switch (category as string) {
                 case 'pdf':
                     if (toolId === 'pdf-join') {
                         response = await pdfService.join(requestData, priority);
@@ -492,7 +494,7 @@ export const MediaTool = () => {
             className="w-full max-w-4xl mx-auto px-4 py-6"
         >
             <motion.div
-                variants={itemVariants}
+                variants={itemVariants as any}
                 className="bg-white dark:bg-cyber-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-cyber-800 overflow-hidden"
             >
                 {/* Header with Gradient */}
@@ -535,7 +537,7 @@ export const MediaTool = () => {
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     {/* File Upload Section */}
-                    <motion.div variants={itemVariants}>
+                    <motion.div variants={itemVariants as Variants}>
                         <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                             <Upload className="w-4 h-4 mr-2" />
                             {getUploadLabel()}
@@ -547,16 +549,16 @@ export const MediaTool = () => {
                             onDrop={setIsDragging}
                             onFileChange={handleFileChange}
                             onClear={handleRemoveFile}
-                            dropzoneText={dropzoneText}
-                            dropzoneSubtext={dropzoneSubtext}
-                            color={color}
-                            accepts={accepts}
+                            dropzoneText={dropzoneText as string}
+                            dropzoneSubtext={dropzoneSubtext as string}
+                            color={color as keyof colorSystemType}
+                            accepts={accepts as string}
                         />
                     </motion.div>
 
                     {/* Settings Section */}
                     {settings.length > 0 && (
-                        <motion.div variants={itemVariants} className="space-y-4">
+                        <motion.div variants={itemVariants as Variants} className="space-y-4">
                             <div className="flex items-center space-x-2">
                                 <Sliders className={`w-4 h-4 ${colors.light.icon} ${colors.dark.icon}`} />
                                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
@@ -569,7 +571,7 @@ export const MediaTool = () => {
 
                     {/* Audio Effects */}
                     {category === 'audios' && effects.length > 0 && (
-                        <motion.div variants={itemVariants}>
+                        <motion.div variants={itemVariants as Variants}>
                             <AudioEffects
                                 effects={effects}
                                 isOpen={showAdvanced}
@@ -581,7 +583,7 @@ export const MediaTool = () => {
 
                     {/* Advanced Options */}
                     {(category === 'images' || category === 'videos' || category === 'documents') && advanced.length > 0 && (
-                        <motion.div variants={itemVariants}>
+                        <motion.div variants={itemVariants as Variants}>
                             <AdvancedOptions
                                 advanced={advanced}
                                 category={category}
@@ -626,7 +628,7 @@ export const MediaTool = () => {
                     )}
 
                     {/* Action Buttons */}
-                    <motion.div variants={itemVariants} className="flex space-x-4 pt-4">
+                    <motion.div variants={itemVariants as Variants} className="flex space-x-4 pt-4">
                         <motion.button
                             type="submit"
                             disabled={files.length === 0 || isProcessing}

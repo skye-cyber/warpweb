@@ -25,7 +25,7 @@ export const DropZone = ({
         files: Array<any>,
         onDrop: CallableFunction,
         onFileChange: ChangeEventHandler | CallableFunction,
-        onClear: (...args: any[]) => {},
+        onClear: CallableFunction,
         dropzoneText: string,
         dropzoneSubtext: string,
         color: keyof colorSystemType,
