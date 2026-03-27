@@ -70,7 +70,7 @@ const toolToOperationMap: Record<string, ConversionType> = {
     'image-ocr': ConversionType.OCR,
 
     // Document operations
-    'document-convert': ConversionType.CONVERT_DOC,
+    'convert_doc': ConversionType.CONVERT_DOC,
     'document-to-image': ConversionType.DOC_TO_IMAGE,
     'html-to-word': ConversionType.HTML_TO_WORD,
     'text-to-word': ConversionType.TEXT_TO_WORD,
@@ -293,9 +293,9 @@ export const MediaTool = () => {
             const priority = (formData.get('priority') as TaskPriorityType) || TaskPriority.MEDIUM;
 
             console.log('Submitting to API:', {
-                toolId,
-                category,
-                operation: toolToOperationMap[toolId],
+                // toolId,
+                // category,
+                // operation: toolToOperationMap[toolId],
                 requestData
             });
 
@@ -421,7 +421,7 @@ export const MediaTool = () => {
             setError(err.response?.data?.detail || err.message || 'Failed to submit task');
 
             // Show error message
-            alert('Error: ' + (err.response?.data?.detail || err.message));
+            console.error('Error: ' + (err.response?.data?.detail || err.message));
         } finally {
             setIsProcessing(false);
         }

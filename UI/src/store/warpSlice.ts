@@ -10,7 +10,7 @@ import { createSlice } from '@reduxjs/toolkit';
  * Initial state for the warpdata slice
  */
 const initialState = {
-    warpdata: {},
+    warp: {},
     loading: false,
     error: null,
     successMessage: null,

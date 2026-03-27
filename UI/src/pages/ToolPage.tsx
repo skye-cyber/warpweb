@@ -1,10 +1,10 @@
-import React from 'react';
 import { useSelector } from 'react-redux';
-import { MediaTool } from '../components/tools/MediaTool';
-import { TOOL_METADATA } from '../config/tools';
+import { MediaTool } from '../components/Tools/MediaTool';
+
+// import { TOOL_METADATA } from '../config/tools';
 
 export const ToolPage = () => {
-    const { activeTool, ui } = useSelector((state) => state.warp);
+    const { activeTool } = useSelector((state: any) => state.warp);
 
     return (
         <div className="container mx-auto px-4 py-8">
