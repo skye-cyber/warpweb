@@ -1,97 +1,44 @@
-/**
- * Local Storage Utilities
- *
- * Helper functions for managing localStorage with error handling
- */
-import type { WarpState } from "./warpSlice";
-/**
- * Save state to localStorage
- * @param {Object} state - The state to save
- */
-export const saveState = (state: WarpState) => {
-    try {
-        const serializedState = JSON.stringify(state);
-        localStorage.setItem('warpstate', serializedState);
+import { RootState } from './index';
 
-        // Also save just the resume data separately for easy access
-        if (state.warp) {
-            const serializedWarpdata = JSON.stringify(state.warp);
-            localStorage.setItem('warpstate', serializedWarpdata);
-        }
-    } catch (err) {
-        console.error('Could not save state to localStorage:', err);
-    }
-};
+const STORAGE_KEY = 'warp_app_state';
 
-/**
- * Load state from localStorage
- * @returns {Object|null} The loaded state or null if failed
- */
-export const loadState = () => {
+// Load state from localStorage
+export const loadState = (): Partial<RootState> | undefined => {
     try {
-        const serializedState = localStorage.getItem('warpstate');
+        const serializedState = localStorage.getItem(STORAGE_KEY);
         if (serializedState === null) {
             return undefined;
         }
         return JSON.parse(serializedState);
     } catch (err) {
-        console.error('Could not load state from localStorage:', err);
+        console.error('Error loading state from localStorage:', err);
         return undefined;
     }
 };
 
-/**
- * Clear state from localStorage
- */
-export const clearState = () => {
+// Save state to localStorage
+export const saveState = (state: RootState): void => {
     try {
-        localStorage.removeItem('warpstate');
-        localStorage.removeItem('warpstate');
+        // Only save specific parts of the state if needed
+        const stateToSave = {
+            warp: {
+                activeTool: state.warp.activeTool,
+                ui: state.warp.ui,
+                // Don't save loading, error, successMessage as they're temporary
+            },
+        };
+        const serializedState = JSON.stringify(stateToSave);
+        localStorage.setItem(STORAGE_KEY, serializedState);
     } catch (err) {
-        console.error('Could not clear state from localStorage:', err);
+        console.error('Error saving state to localStorage:', err);
     }
 };
 
-/**
- * Save warpdata to localStorage
- * @param {Object} resume - The resume data to save
- */
-export const saveWarpState = (warpdata: WarpState) => {
+// Clear state from localStorage
+export const clearState = (): void => {
     try {
-        const serializedWarpdata = JSON.stringify(warpdata);
-        localStorage.setItem('warpdata', serializedWarpdata);
-        localStorage.setItem('warpdata-last-save', new Date().toISOString());
+        localStorage.removeItem(STORAGE_KEY);
     } catch (err) {
-        console.error('Could not save warpdata to localStorage:', err);
-    }
-};
-
-/**
- * Load warpdata from localStorage
- * @returns {Object|null} The loaded resume or null if failed
- */
-export const loadWarpState = () => {
-    try {
-        const serializedWarpdata = localStorage.getItem('warpdata');
-        if (serializedWarpdata === null) {
-            return null;
-        }
-        return JSON.parse(serializedWarpdata);
-    } catch (err) {
-        console.error('Could not load warpdata from localStorage:', err);
-        return null;
-    }
-};
-
-/**
- * Get last save timestamp
- * @returns {string|null} ISO timestamp or null
- */
-export const getLastSaveTime = () => {
-    try {
-        return localStorage.getItem('warpdata-last-save');
-    } catch (err) {
-        console.error('Could not get last save time:', err);
-        return null;
+        console.error('Error clearing state from localStorage:', err);
     }
 };

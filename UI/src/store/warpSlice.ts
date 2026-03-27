@@ -1,20 +1,42 @@
 /**
  * Warp Slice
  *
- * Redux slice for managing warpdata data and application state
+ * Redux slice for managing warp data and application state
  */
 
 import { createSlice } from '@reduxjs/toolkit';
+import { Reducer } from 'react';
 
+interface Tool {
+    category: string,
+    id: number | string | null,
+    name: string
+}
+
+interface UI {
+    activeTab: string,
+    panelWidth: number,
+    isDragging: boolean,
+    zoomLevel: number,
+}
+
+export interface WarpState {
+    warp: Record<any, any>
+    loading: boolean
+    error: string | null
+    successMessage: string | null | undefined
+    activeTool: Tool
+    ui: UI
+}
 /**
- * Initial state for the warpdata slice
+ * Initial state for the warp slice
  */
-const initialState = {
+const initialState: WarpState = {
     warp: {},
     loading: false,
     error: null,
     successMessage: null,
-    activeTool: {category: 'dashboard', id: 1, name: 'Dashboard'},
+    activeTool: { category: 'dashboard', id: 1, name: 'Dashboard' },
     ui: {
         activeTab: 'dashboard',
         panelWidth: 350,
@@ -31,100 +53,100 @@ export const warpSlice = createSlice({
     initialState,
     reducers: {
         /**
-         * Set the current warpdata
+         * Set the current warp
          * @param {WarpState} state - Current state
          * @param {Object} action - Redux action
-         * @param {Object} action.payload - warpdata to set
+         * @param {Object} action.payload - warp to set
          */
-        setWarpdata: (state, action) => {
-            state.warpdata = action.payload;
+        setWarp: (state: WarpState, action) => {
+            state.warp = action.payload;
             state.error = null;
         },
 
         /**
          * Update Warpdata partially
-         * @param {WarpState} state - Current state
+         * @param {WarpWarpState} state - Current state
          * @param {Object} action - Redux action
          * @param {Object} action.payload - Partial Warpdata to update
          */
-        updateWarpdata: (state, action) => {
-            state.warpdata = { ...state.warpdata, ...action.payload };
+        updateWarp: (state: WarpState, action) => {
+            state.warp = { ...state.warp, ...action.payload };
         },
 
         /**
          * Reset to empty Warpdata
-         * @param {WarpState} state - Current state
+         * @param {WarpWarpState} state - Current state
          */
-        resetWarpdata: (state) => {
-            state.warpdata = {};
+        resetWarp: (state: WarpState) => {
+            state.warp = {};
             state.error = null;
             state.successMessage = 'FileWarp initialized';
         },
 
-        // UI State management
-        setActiveTab: (state, action) => {
+        // UI WarpState management
+        setActiveTab: (state: WarpState, action) => {
             state.ui.activeTab = action.payload;
         },
 
-        setActiveTool: (state, action) => {
+        setActiveTool: (state: WarpState, action) => {
             state.activeTool = action.payload;
         },
 
-        setPanelWidth: (state, action) => {
+        setPanelWidth: (state: WarpState, action) => {
             state.ui.panelWidth = action.payload;
         },
 
-        setIsDragging: (state, action) => {
+        setIsDragging: (state: WarpState, action) => {
             state.ui.isDragging = action.payload;
         },
 
-        setZoomLevel: (state, action) => {
+        setZoomLevel: (state: WarpState, action) => {
             state.ui.zoomLevel = action.payload;
         },
 
         /**
          * Set loading state
-         * @param {WarpState} state - Current state
+         * @param {WarpWarpState} state - Current state
          * @param {Object} action - Redux action
          * @param {boolean} action.payload - Loading state to set
          */
-        setLoading: (state, action) => {
+        setLoading: (state: WarpState, action) => {
             state.loading = action.payload;
         },
 
         /**
          * Set error message
-         * @param {WarpState} state - Current state
+         * @param {WarpWarpState} state - Current state
          * @param {Object} action - Redux action
          * @param {string|null} action.payload - Error message to set
          */
-        setError: (state, action) => {
+        setError: (state: WarpState, action) => {
             state.error = action.payload;
             state.loading = false;
         },
         /**
          * Clear error message
-         * @param {WarpState} state - Current state
+         * @param {WarpWarpState} state - Current state
          */
         clearError: (state) => {
             state.error = null;
         },
         /**
          * Set success message
-         * @param {WarpState} state - Current state
+         * @param {WarpWarpState} state - Current state
          * @param {Object} action - Redux action
          * @param {string|null} action.payload - Success message to set
          */
-        setSuccess: (state, action) => {
+        setSuccess: (state: WarpState, action) => {
             state.successMessage = action.payload;
             state.loading = false;
         },
 
         /**
          * Clear success message
-         * @param {WarpState} state - Current state
+         * @param {WarpWarpState} state - Current state
          */
-        clearSuccess: (state) => {
+        clearSuccess: (state: WarpState) => {
             state.successMessage = null;
         }
     },
@@ -147,5 +169,6 @@ export const {
     setZoomLevel
 } = warpSlice.actions;
 
-const warpReducer = warpSlice.reducer;
-export default warpReducer
+// Export with the correct Redux Reducer type that allows undefined
+const warpReducer: Reducer<WarpState> = warpSlice.reducer as Reducer<WarpState>;
+export default warpReducer;
