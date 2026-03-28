@@ -2222,16 +2222,12 @@ html {
   opacity: 0.1;
 }
 
-.opacity-50 {
-  opacity: 0.5;
-}
-
-.opacity-\[10\] {
-  opacity: 10;
-}
-
 .opacity-30 {
   opacity: 0.3;
+}
+
+.opacity-50 {
+  opacity: 0.5;
 }
 
 .shadow {
@@ -2870,18 +2866,6 @@ html {
 
 .focus\:ring-offset-2:focus {
   --tw-ring-offset-width: 2px;
-}
-
-.disabled\:bg-opacity-\[10\]:disabled {
-  --tw-bg-opacity: 10;
-}
-
-.disabled\:opacity-\[10\]:disabled {
-  opacity: 10;
-}
-
-.disabled\:opacity-30:disabled {
-  opacity: 0.3;
 }
 
 .group\/btn:hover .group-hover\/btn\:translate-x-0 {
