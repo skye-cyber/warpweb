@@ -3,7 +3,7 @@ from typing import Optional
 from ...models.requests import (
     ConversionRequest,
     ConversionType,
-    PDFJoinRequest,
+    PDFMergeRequest,
     PageExtractionRequest,
 )
 from warpapp.models.responses import TaskResponse
@@ -19,9 +19,9 @@ from warpapp.utils.logger import logger
 router = APIRouter(prefix="/pdf", tags=["pdf"])
 
 
-@router.post("/join", response_model=TaskResponse)
-async def join_pdfs(
-    request: PDFJoinRequest,
+@router.post("/merge", response_model=TaskResponse)
+async def merge_pdfs(
+    request: PDFMergeRequest,
     background_tasks: BackgroundTasks,
     priority: TaskPriority = Query(TaskPriority.MEDIUM, description="Task priority"),
     conversion_service: ConversionService = Depends(get_conversion_service),

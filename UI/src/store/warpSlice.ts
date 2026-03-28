@@ -4,7 +4,7 @@
  * Redux slice for managing warp data and application state
  */
 
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, UnknownAction } from '@reduxjs/toolkit';
 import { Reducer } from 'react';
 
 interface Tool {
@@ -170,5 +170,5 @@ export const {
 } = warpSlice.actions;
 
 // Export with the correct Redux Reducer type that allows undefined
-const warpReducer: Reducer<WarpState> = warpSlice.reducer as Reducer<WarpState>;
+const warpReducer: any = warpSlice.reducer as Reducer<WarpState, UnknownAction | undefined>;
 export default warpReducer;

@@ -1,5 +1,13 @@
 import { MediaTool } from "../components/Tools/MediaTool";
 import { ComponentType } from "react";
+import { ConversionType } from "../services/types/api.d";
+import {
+    pdfService,
+    audioService,
+    videoService,
+    imageService,
+    documentService
+} from '../services/api';
 
 // ==================== Type Definitions ====================
 
@@ -90,8 +98,8 @@ export const TOOLS: Record<string, ToolConfig> = {
         dropzoneText: 'Drop your documents here',
         dropzoneSubtext: 'or click to browse (PDF, DOCX, TXT, RTF)',
         submitText: 'Convert Document',
-        settings: ['docFormat', 'pageRange'],
-        advanced: ['ocr', 'metadata'],
+        settings: ['docFormat'],  // 'pageRange'],
+        advanced: ['metadata'],
         icon: 'docConvert',
         submitIcon: 'convert'
     },
@@ -157,19 +165,19 @@ export const TOOLS: Record<string, ToolConfig> = {
         icon: 'docLongImage',
         submitIcon: 'image'
     },
-    extract_pages: {
+    extract_pdf_pages: {
         category: 'documents',
-        id: 'extract_pages',
+        id: 'extract_pdf_pages',
         name: 'extract pages',
         description: "extract pages from document",
         title: 'Extract Pages',
         color: 'blue',
         badge: 'Page Extraction',
-        accepts: '.pdf,.docx,.doc',
-        dropzoneText: 'Drop documents here',
-        dropzoneSubtext: 'Extract specific pages from your document',
+        accepts: '.pdf',
+        dropzoneText: 'Drop pdf documents here',
+        dropzoneSubtext: 'Extract specific pages from your pdf',
         submitText: 'Extract Pages',
-        settings: ['startPage', 'endPage'],
+        settings: ['startStopPage'],
         icon: 'docExtract',
         submitIcon: 'extract'
     },
@@ -204,7 +212,7 @@ export const TOOLS: Record<string, ToolConfig> = {
         dropzoneSubtext: 'or click to browse (PNG, JPG, WEBP, GIF)',
         submitText: 'Convert Images',
         settings: ['imageFormat', 'quality'],
-        advanced: ['resize'],
+        //advanced: ['resize'],
         icon: 'imageConvert',
         submitIcon: 'convert'
     },
@@ -274,8 +282,8 @@ export const TOOLS: Record<string, ToolConfig> = {
     },
     ocr: {
         category: 'images',
-        id: 'ocr',
-        name: "ocr",
+        id: 'image_ocr',
+        name: "image ocr",
         description: "perform text extraction on image",
         title: 'OCR Text Extraction',
         color: 'red',
@@ -336,8 +344,8 @@ export const TOOLS: Record<string, ToolConfig> = {
         dropzoneText: 'Drop audio files here',
         dropzoneSubtext: 'Apply effects to your audio',
         submitText: 'Apply Effects',
-        settings: [],
-        effects: ['reverb', 'echo', 'pitch', 'speed'],
+        settings: ["noiseCutoff"],
+        effects: ['reverb', 'echo', "high", "whisper", "demonic", "hacker", "lowpass", "highpass", "distortion", "denoise", "chipmunk"],
         icon: 'audioEffect',
         submitIcon: 'effect'
     },
@@ -629,3 +637,51 @@ export function toolExists(toolId: string): boolean {
 export function getAllToolIds(): string[] {
     return Object.keys(TOOLS);
 }
+
+
+// Map tool IDs to API operations
+export const toolToOperationMap: Record<string, ConversionType> = {
+    // PDF operations
+    'pdf-join': ConversionType.PDF_JOIN,
+    'pdf-extract': ConversionType.EXTRACT_PAGES,
+    'pdf-extract-images': ConversionType.EXTRACT_IMAGES,
+    'pdf-scan': ConversionType.SCAN_PDF,
+    'pdf-to-long-image': ConversionType.PDF_TO_LONG_IMAGE,
+
+    // Audio operations
+    'audio-convert': ConversionType.CONVERT_AUDIO,
+    'audio-extract': ConversionType.EXTRACT_AUDIO,
+    'audio-join': ConversionType.JOIN_AUDIO,
+    'audio-record': ConversionType.RECORD,
+    'audio-effects': ConversionType.AUDIO_EFFECTS,
+
+    // Video operations
+    'video-convert': ConversionType.CONVERT_VIDEO,
+    'video-analyze': ConversionType.ANALYZE_VIDEO,
+    'video-extract-frames': 'extract-frames' as ConversionType,
+    'video-compress': 'compress-video' as ConversionType,
+
+    // Image operations
+    'image-convert': ConversionType.CONVERT_IMAGE,
+    'image-resize': ConversionType.RESIZE_IMAGE,
+    'image-to-pdf': ConversionType.IMAGES_TO_PDF,
+    'image-to-word': ConversionType.IMAGES_TO_WORD,
+    'image-grayscale': ConversionType.IMAGES_TO_GRAY,
+    'image-ocr': ConversionType.OCR,
+
+    // Document operations
+    'convert_doc': ConversionType.CONVERT_DOC,
+    'document-to-image': ConversionType.DOC_TO_IMAGE,
+    'html-to-word': ConversionType.HTML_TO_WORD,
+    'text-to-word': ConversionType.TEXT_TO_WORD,
+    'markdown-to-word': ConversionType.MARKDOWN_TO_DOCX,
+};
+
+// Map categories to their respective services
+export const categoryServiceMap = {
+    pdf: pdfService,
+    audios: audioService,
+    videos: videoService,
+    images: imageService,
+    documents: documentService,
+};

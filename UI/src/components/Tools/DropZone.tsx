@@ -65,7 +65,7 @@ export const DropZone = ({
             transition-all duration-300 overflow-hidden
             ${isDragging
                     ? `${colors.light.border} ${colors.dark.border} scale-[1.02] ${colors.light.bg} ${colors.dark.bg}`
-                    : 'border-gray-300 dark:border-cyber-700 hover:border-gray-400 dark:hover:border-cyber-600'
+                    : 'border-gray-300 dark:border-cyber-600 hover:border-gray-400 dark:hover:border-cyber-300'
                 }
             ${files.length > 0 ? 'p-4' : 'p-8'}
             `}

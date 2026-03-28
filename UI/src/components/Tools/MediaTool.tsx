@@ -36,55 +36,11 @@ import type {
     VideoAnalysisRequest,
     TaskPriority as TaskPriorityType
 } from '../../services/types/api';
-import { ConversionType, TaskPriority } from '../../services/types/api.d';
+import { TaskPriority } from '../../services/types/api.d';
 import { colorSystemType } from './utils/utils';
+import { toolToOperationMap } from '../../config/ToolSchema';
+// import { categoryServiceMap } from '../../config/ToolSchema';
 
-// Map tool IDs to API operations
-const toolToOperationMap: Record<string, ConversionType> = {
-    // PDF operations
-    'pdf-join': ConversionType.PDF_JOIN,
-    'pdf-extract': ConversionType.EXTRACT_PAGES,
-    'pdf-extract-images': ConversionType.EXTRACT_IMAGES,
-    'pdf-scan': ConversionType.SCAN_PDF,
-    'pdf-to-long-image': ConversionType.PDF_TO_LONG_IMAGE,
-
-    // Audio operations
-    'audio-convert': ConversionType.CONVERT_AUDIO,
-    'audio-extract': ConversionType.EXTRACT_AUDIO,
-    'audio-join': ConversionType.JOIN_AUDIO,
-    'audio-record': ConversionType.RECORD,
-    'audio-effects': ConversionType.AUDIO_EFFECTS,
-
-    // Video operations
-    'video-convert': ConversionType.CONVERT_VIDEO,
-    'video-analyze': ConversionType.ANALYZE_VIDEO,
-    'video-extract-frames': 'extract-frames' as ConversionType,
-    'video-compress': 'compress-video' as ConversionType,
-
-    // Image operations
-    'image-convert': ConversionType.CONVERT_IMAGE,
-    'image-resize': ConversionType.RESIZE_IMAGE,
-    'image-to-pdf': ConversionType.IMAGES_TO_PDF,
-    'image-to-word': ConversionType.IMAGES_TO_WORD,
-    'image-grayscale': ConversionType.IMAGES_TO_GRAY,
-    'image-ocr': ConversionType.OCR,
-
-    // Document operations
-    'convert_doc': ConversionType.CONVERT_DOC,
-    'document-to-image': ConversionType.DOC_TO_IMAGE,
-    'html-to-word': ConversionType.HTML_TO_WORD,
-    'text-to-word': ConversionType.TEXT_TO_WORD,
-    'markdown-to-word': ConversionType.MARKDOWN_TO_DOCX,
-};
-
-// Map categories to their respective services
-export const categoryServiceMap = {
-    pdf: pdfService,
-    audios: audioService,
-    videos: videoService,
-    images: imageService,
-    documents: documentService,
-};
 
 // Main MediaTool Component
 export const MediaTool = () => {
@@ -113,8 +69,8 @@ export const MediaTool = () => {
         settings = [],
         effects = [],
         advanced = [],
-//         icon,
-//         submitIcon
+        //         icon,
+        //         submitIcon
     } = config;
 
     const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
@@ -124,7 +80,8 @@ export const MediaTool = () => {
     const prepareRequestData = (formData: FormData): any => {
         const operation = toolToOperationMap[toolId];
         const inputPaths = files.map((file: any) => file.path || URL.createObjectURL(file));
-        const settings = formData
+        //         const settings = formData
+        console.log(files)
 
         // Get settings from form
         const settingsData: Record<string, any> = {};
@@ -164,16 +121,17 @@ export const MediaTool = () => {
             }
         };
 
+        console.log(toolId)
         // Handle specific operations
         switch (toolId) {
-            case 'pdf-join':
+            case 'merge_pdf':
                 return {
                     pdf_paths: inputPaths,
                     output_path: formData.get('output_path') || null,
                     order: formData.get('order') || 'AAB'
                 } as PDFJoinRequest;
 
-            case 'pdf-extract':
+            case 'extract_pdf_pages':
                 return {
                     pdf_path: inputPaths[0],
                     start_page: formData.get('start_page') ? Number(formData.get('start_page')) : 1,
@@ -188,14 +146,14 @@ export const MediaTool = () => {
                     image_size: formData.get('image_size') || null
                 };
 
-            case 'pdf-scan':
+            case 'scan_pdf':
                 return {
                     pdf_path: inputPaths[0],
                     mode: formData.get('mode') || 'standard',
                     separator: formData.get('separator') || '\n'
                 };
 
-            case 'audio-join':
+            case 'audio_join':
                 return {
                     input_paths: inputPaths,
                     output_path: formData.get('output_path') || null
@@ -211,7 +169,7 @@ export const MediaTool = () => {
             case 'audio-effects':
                 return effectsData;
 
-            case 'image-resize':
+            case 'resize_image':
                 return {
                     image_path: inputPaths[0],
                     target_size: formData.get('target_size') || '50%',
@@ -219,7 +177,7 @@ export const MediaTool = () => {
                     output_path: formData.get('output_path') || null
                 } as ImageResizeRequest;
 
-            case 'image-ocr':
+            case 'ocr':
                 return {
                     image_paths: inputPaths,
                     language: formData.get('language') || 'eng',
@@ -227,7 +185,7 @@ export const MediaTool = () => {
                     output_path: formData.get('output_path') || null
                 } as OCRRequest;
 
-            case 'image-to-pdf':
+            case 'image2pdf':
                 return {
                     image_paths: inputPaths,
                     output_path: formData.get('output_path') || null,
@@ -235,13 +193,13 @@ export const MediaTool = () => {
                     walk: formData.get('walk') === 'true'
                 };
 
-            case 'image-to-word':
+            case 'image2word':
                 return {
                     image_paths: inputPaths,
                     output_path: formData.get('output_path') || null
                 };
 
-            case 'text-to-word':
+            case 'text2word':
                 return {
                     text_path: inputPaths[0],
                     font_size: formData.get('font_size') ? Number(formData.get('font_size')) : 12,
@@ -249,7 +207,7 @@ export const MediaTool = () => {
                     output_path: formData.get('output_path') || null
                 } as TextToWordRequest;
 
-            case 'video-analyze':
+            case 'analyze_video':
                 return {
                     video_path: inputPaths[0],
                     analyze_audio: formData.get('analyze_audio') === 'true',
@@ -264,7 +222,7 @@ export const MediaTool = () => {
                     format: formData.get('format') || 'jpg'
                 };
 
-            case 'video-compress':
+            case 'compress_video':
                 return {
                     video_path: inputPaths[0],
                     target_size: formData.get('target_size') || null,
@@ -276,10 +234,18 @@ export const MediaTool = () => {
                 // For generic conversions (convert, etc.)
                 baseRequest.target_format = formData.get('target_format')?.toString() || null;
                 baseRequest.threads = formData.get('threads') ? Number(formData.get('threads')) : 3;
-                baseRequest.no_resume = formData.get('no_resume') === 'true';
+                //                 baseRequest.no_resume = formData.get('no_resume') === 'true';
                 return baseRequest;
         }
     };
+
+    interface ErrorItem {
+        lock: Array<string | number | any>
+        msg: string
+        type: string
+    }
+
+    type ErrorType = Array<ErrorItem>
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -417,11 +383,16 @@ export const MediaTool = () => {
             alert('Task submitted successfully! Task ID: ' + response.data.task_id);
 
         } catch (err: any) {
-            console.error('Submission error:', err);
-            setError(err.response?.data?.detail || err.message || 'Failed to submit task');
+            const errors: ErrorType = err.response?.data?.detail
+            // console.error('Submission error:', err);
+            setError(JSON.stringify(errors[0].msg || err.response?.data?.detail) || err.message || 'Failed to submit task');
 
-            // Show error message
-            console.error('Error: ' + (err.response?.data?.detail || err.message));
+            if (errors) {
+                // Show error message
+                errors.forEach((err: any) => {
+                    console.log(err)
+                });
+            }
         } finally {
             setIsProcessing(false);
         }
@@ -458,6 +429,7 @@ export const MediaTool = () => {
         const newFiles = Array.from(e.target.files || []);
         setFiles(prev => [...prev, ...newFiles]);
         setError(null);
+        console.log(files)
     };
 
     const handleRemoveFile = (index?: number) => {

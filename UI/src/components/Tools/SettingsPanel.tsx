@@ -20,7 +20,7 @@ import {
     Sparkles,
     LucideProps
 } from 'lucide-react';
-import { ForwardRefExoticComponent, MouseEventHandler } from 'react';
+import { ForwardRefExoticComponent, MouseEventHandler, useRef } from 'react';
 
 interface colorMap {
     bg: string
@@ -155,6 +155,7 @@ interface RendererSettingsType {
     intensity: (...args: any[]) => JSX.Element
     docFormat: (...args: any[]) => JSX.Element
     pageRange: (...args: any[]) => JSX.Element
+    startStopPage: (...args: any[]) => JSX.Element
     mergeOrder: (...args: any[]) => JSX.Element
     compressionLevel: (...args: any[]) => JSX.Element
     videoFormat: (...args: any[]) => JSX.Element
@@ -299,6 +300,13 @@ const settingRenderers: RendererSettingsType = {
                         min="1"
                         max="100"
                         defaultValue="85"
+                        onChange={(e: any) => {
+                            if (e.target.value < 1) {
+                                e.target.value = 1
+                            } else if (e.target.value > 100) {
+                                e.target.value = 100
+                            }
+                        }}
                         className="w-full accent-current"
                         style={{ color: colors.light.icon }}
                     />
@@ -468,6 +476,49 @@ const settingRenderers: RendererSettingsType = {
             />
         </motion.div>
     ),
+    startStopPage: ({ color }: { color: string }) => (
+        <motion.div
+            key="startEndPage"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-4"
+        >
+            <div>
+                <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <Layers className="w-4 h-4 mr-2" />
+                    Start Page
+                </label>
+                <input
+                    type="number"
+                    min='1'
+                    step='1'
+                    name="start_page"
+                    placeholder="e.g., 4"
+                    onChange={(e: any) => {
+                        if (e.target.value < 1) e.target.value = 1
+                    }}
+                    className={getInputClass(color)}
+                />
+            </div>
+            <div>
+                <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <Layers className="w-4 h-4 mr-2" />
+                    End Page
+                </label>
+                <input
+                    type="number"
+                    min='-1'
+                    step='1'
+                    name="stop_page"
+                    placeholder="e.g., 8"
+                    onChange={(e: any) => {
+                        if (e.target.value < -1) e.target.value = -1
+                    }}
+                    className={getInputClass(color)}
+                />
+            </div>
+        </motion.div>
+    ),
 
     mergeOrder: ({ color }: { color: string }) => {
         const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
@@ -483,8 +534,12 @@ const settingRenderers: RendererSettingsType = {
                     Merge Order
                 </label>
                 <p className={`text-xs ${colors.light.text} ${colors.dark.text} bg-opacity-10 p-2 rounded-lg`}>
-                    Files will be merged in the order they appear above
+                    Files may be merged in the order they appear or in alternating order
                 </p>
+                <select name='order' defaultValue='AAB' className={getInputClass(color)}>
+                    <option value="AAB">Linear/Sequential</option>
+                    <option value="ABA">Alternating</option>
+                </select>
             </motion.div>
         );
     },
@@ -602,7 +657,7 @@ export const SettingsPanel = ({ settings = [], category, color = 'green' }: { se
         <div className={`grid grid-cols-1 ${cols} gap-6`}>
             {settings.map((setting: keyof RendererSettingsType) => {
                 const renderer = settingRenderers[setting];
-            return renderer ? renderer({category, color}) : null;
+                return renderer ? renderer({ category, color }) : null;
             })}
         </div>
     );
@@ -766,6 +821,7 @@ export const AdvancedOptions = ({ advanced = [], category, isOpen, onToggle, col
 // AudioEffects component
 export const AudioEffects = ({ effects = [], isOpen, onToggle, color = 'green' }: { effects: Array<any>, isOpen: boolean, onToggle: MouseEventHandler, color: string }) => {
     const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
+    const effectsContainer = useRef(null)
 
     if (!effects.length) return null;
 
@@ -780,7 +836,18 @@ export const AudioEffects = ({ effects = [], isOpen, onToggle, color = 'green' }
         noiseReduce: 'Noise Reduce',
         normalize: 'Normalize',
         compressor: 'Compressor',
-        equalizer: 'Equalizer'
+        equalizer: 'Equalizer',
+        reverb: 'Reverb',
+        echo: 'Echo',
+        high: "High",
+        whisper: "Whisper",
+        demonic: "Demonic",
+        hacker: "Hacker",
+        lowpass: "Lowpass",
+        highpass: "Highpass",
+        distortion: "Distortion",
+        denoise: "Denoise",
+        chipmunk: "Chipmunk"
     };
 
     interface effectIconType {
@@ -796,6 +863,28 @@ export const AudioEffects = ({ effects = [], isOpen, onToggle, color = 'green' }
         compressor: Gauge,
         equalizer: Mic, //Equalizer
     };
+
+    const handleChange = (e: any) => {
+        if (!effectsContainer.current) return
+        const effects = (effectsContainer.current as any).querySelectorAll('.effect')
+        const action = e.target.checked ? "check" : "uncheck"
+
+        if (action === "check") {
+            effects.forEach((effect: any) => {
+                if (e.target !== effect) {
+                    effect.disabled = true
+                    effect.parentElement?.classList?.add("opacity-30", "cursor-forbidden")
+                }
+            })
+        } else if (action === "uncheck") {
+            effects.forEach((effect: any) => {
+                if (e.target !== effect) {
+                    effect.disabled = false
+                    effect.parentElement?.classList?.remove("opacity-30", "cursor-forbidden")
+                }
+            })
+        }
+    }
 
     return (
         <div className={`rounded-xl border ${colors.light.border} ${colors.dark.border} overflow-hidden`}>
@@ -823,24 +912,25 @@ export const AudioEffects = ({ effects = [], isOpen, onToggle, color = 'green' }
                         exit={{ opacity: 0, height: 0 }}
                         className="p-4 bg-white dark:bg-cyber-800/50 border-t border-gray-200 dark:border-cyber-700"
                     >
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {effects.map((effect: keyof effectIconType) => {
+                        <div ref={effectsContainer} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {effects.map((effect: keyof effectIconType, index) => {
                                 const Icon = effectIcons[effect];
                                 return (
-                                    <label key={effect} className="flex items-center space-x-2 cursor-pointer group">
-                                        <input
-                                            type="checkbox"
-                                            name={`effect_${effect}`}
-                                            className={`
-                            w-4 h-4 rounded border-gray-300
-                            ${colors.light.focus} ${colors.dark.focus}
-                            `}
-                                        />
+                                    <div key={index}  className='flex gap-2'>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                name={`${effect}`}
+                                                onChange={handleChange}
+                                                className="effect sr-only peer"
+                                            />
+                                            <div className="w-11 h-6 bg-gray-300 dark:bg-cyber-600 peer-focus:outline-none peer-focus:ring-none peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-gray-100 after:border-gray-100 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                        </label>
                                         {Icon && <Icon className={`w-3 h-3 ${colors.light.icon} ${colors.dark.icon} opacity-50 group-hover:opacity-100 transition-opacity`} />}
                                         <span className={`text-xs ${colors.light.text} ${colors.dark.text} group-hover:opacity-100 transition-opacity`}>
                                             {effectLabels[effect]}
                                         </span>
-                                    </label>
+                                    </div>
                                 );
                             })}
                         </div>

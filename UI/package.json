@@ -10,6 +10,7 @@
     "dev:tsc": "npx tsc -p tsconfig.json --watch",
     "dev:ui": "vite",
     "dev:server": "python ../Server/warpapp/main.py",
+    "dev:styles": "npm run tailwind:watch",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
