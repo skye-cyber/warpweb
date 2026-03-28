@@ -357,15 +357,16 @@ export const Dashboard = () => {
                     className="flex flex-wrap gap-3 mt-4 justify-center sm:justify-start"
                 >
                     {[
-                        { icon: Download, label: 'Downloads', color: 'blue' },
+                        { icon: Download, label: 'Downloads', color: 'blue', target: '' },
                         { icon: Share2, label: 'Share', color: 'green' },
-                        { icon: Layers, label: 'Batch Process', color: 'purple' },
-                        { icon: MoreHorizontal, label: 'More', color: 'gray' }
+                        { icon: Layers, label: 'Batch Process', color: 'purple', target: '/batch'  },
+                        { icon: MoreHorizontal, label: 'More', color: 'gray', target: ''  }
                     ].map((action) => (
                         <motion.button
                             key={action.label}
                             whileHover={{ y: -2 }}
                             whileTap={{ scale: 0.95 }}
+                            onClick={()=> handleNavigate(action.target)}
                             className={`px-4 py-2 rounded-xl bg-${action.color}-50 dark:bg-${action.color}-900/30 text-${action.color}-600 dark:text-${action.color}-300 hover:bg-${action.color}-100 dark:hover:bg-${action.color}-900/50 transition-colors flex items-center gap-2 text-sm font-medium border dark:border-${action.color}-800/30`}
                         >
                             <action.icon className="w-4 h-4" />
