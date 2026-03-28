@@ -355,6 +355,79 @@ export const formatsService = {
         api.get("/api/v1/formats/compare", { params: { format1, format2 } }),
 };
 
+// New service for blob uploads
+export const blobUploadService = {
+
+    open(xhr:XMLHttpRequest, data: any){
+        xhr.open("POST", "http://localhost:8000/api/v1/upload")
+        xhr.send(data)
+        return xhr
+    },
+
+    async uploadFiles(files: File[]): Promise<string[]> {
+        const data = new FormData();
+        files.forEach(file => {
+            data.append('files', file);
+        });
+
+        const response = await api.post('/api/v1/upload', data);
+
+        if (response.status!==200) {
+            throw new Error(response.statusText || 'Upload failed');
+        }
+        return response.data?.files; // Returns array of saved file paths
+    },
+
+    async uploadAndConvert(
+        files: File[],
+        conversionData: any,
+        onProgress?: (progress: number) => void
+    ): Promise<any> {
+        const formData = new FormData();
+
+        // Append files
+        files.forEach(file => {
+            formData.append('files', file);
+        });
+
+        // Append conversion parameters
+        Object.keys(conversionData).forEach(key => {
+            if (conversionData[key] !== undefined && conversionData[key] !== null) {
+                if (typeof conversionData[key] === 'object') {
+                    formData.append(key, JSON.stringify(conversionData[key]));
+                } else {
+                    formData.append(key, String(conversionData[key]));
+                }
+            }
+        });
+
+        // Use XHR for progress tracking
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable && onProgress) {
+                    const percent = (e.loaded / e.total) * 100;
+                    onProgress(percent);
+                }
+            });
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    resolve(JSON.parse(xhr.responseText));
+                } else {
+                    reject(new Error(`Upload failed: ${xhr.status}`));
+                }
+            };
+
+            xhr.onerror = () => reject(new Error('Network error'));
+
+            xhr.open('POST', '/api/v1/upload-and-convert');
+            xhr.send(formData);
+        });
+    }
+};
+
 // ==================== Root Endpoints ====================
 export const rootService = {
     /** Root endpoint with API information */

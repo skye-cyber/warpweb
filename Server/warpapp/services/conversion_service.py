@@ -362,6 +362,25 @@ class ConversionService:
             },
         }
 
+    def validate_conversion(self, request: ConversionRequest):
+        # Validate operation
+        if request.operation.value not in self.supported_operations:
+            return False, f"Unsupported operation: {request.operation}"
+
+        input_formats = self.supported_operations.get("input_formats")
+        output_format = self.supported_operations.get("output_format")
+
+        if not input_formats:
+            for file in request.input_paths:
+                input_format = f".{Path(file).suffix}"
+                if input_format and input_formats and input_format not in input_formats:
+                    return False, "Input format not supported"
+
+        if output_format and request.target_format not in output_format:
+            return False, "Target Format not supported"
+
+        return True, "Conversion valid"
+
     def submit_conversion(
         self, request: ConversionRequest, priority: TaskPriority = TaskPriority.MEDIUM
     ) -> str:

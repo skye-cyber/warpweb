@@ -21,6 +21,7 @@ from warpapp.api.routes import (
     tasks_router,
     formats_router,
     websocket_router,
+    upload_router,
 )
 from warpapp.config import settings
 from warpapp.api.dependencies import cleanup_resources
@@ -82,6 +83,7 @@ app.include_router(system_router, prefix=settings.API_V1_PREFIX)
 app.include_router(tasks_router, prefix=settings.API_V1_PREFIX)
 app.include_router(formats_router, prefix=settings.API_V1_PREFIX)
 app.include_router(websocket_router, prefix=settings.API_V1_PREFIX)
+app.include_router(upload_router, prefix=settings.API_V1_PREFIX)
 
 
 # Mount static directories

@@ -7,6 +7,7 @@ import hashlib
 import mimetypes
 import humanize
 from warpapp.utils.logger import logger
+from warpapp.config import settings
 
 
 class FileHandler:
@@ -15,7 +16,7 @@ class FileHandler:
     """
 
     def __init__(
-        self, base_upload_dir: str = "uploads", base_output_dir: str = "outputs"
+        self, base_upload_dir: str | Path = settings.UPLOAD_DIR, base_output_dir: str | Path = settings.OUTPUT_DIR
     ):
         self.base_upload_dir = Path(base_upload_dir)
         self.base_output_dir = Path(base_output_dir)

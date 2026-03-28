@@ -729,6 +729,16 @@ export type PaginatedResponse<T> = {
     has_more: boolean;
 };
 
+// File upload status interface
+export interface FileUploadStatus {
+    id: string;
+    file: File;
+    progress: number;
+    status: 'pending' | 'uploading' | 'completed' | 'failed';
+    serverPath?: string;
+    error?: string;
+}
+
 export type BatchSubmitResponse = TaskResponse[];
 
 export type SupportedFormatsResponse = Record<string, string[]>;

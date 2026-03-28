@@ -49,11 +49,11 @@ async def submit_conversion(
                 )
 
             # Validate target format
-            from_format = file_handler.get_file_info(request.input_paths[0])[
-                "extension"
-            ]
+            # from_format = file_handler.get_file_info(request.input_paths[0])[
+            #     "extension"
+            # ]
             valid, message = conversion_service.validate_conversion(
-                from_format, f".{request.target_format}"
+                request
             )
             if not valid:
                 raise HTTPException(status_code=400, detail=message)
@@ -85,6 +85,7 @@ async def submit_conversion(
     except HTTPException:
         raise
     except Exception as e:
+        raise
         logger.error(f"Error submitting conversion: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
