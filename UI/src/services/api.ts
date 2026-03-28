@@ -62,7 +62,7 @@ export const conversionService = {
 export const pdfService = {
     /** Join multiple PDF files */
     join: (data: PDFJoinRequest, priority = "medium") =>
-        api.post("/api/v1/pdf/join", data, { params: { priority } }),
+        api.post("/api/v1/pdf/merge", data, { params: { priority } }),
 
     /** Extract specific pages from a PDF */
     extractPages: (data: PageExtractionRequest, priority = "medium") =>

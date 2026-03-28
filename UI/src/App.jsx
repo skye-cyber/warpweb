@@ -9,21 +9,17 @@
  * - Theme and layout management
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Box, CircularProgress, Snackbar, Alert, useTheme } from '@mui/material';
 import MainLayout from './components/layouts/MainLayout';
 import WelcomeScreen from './pages/WelcomeScreen';
 import ErrorBoundary from './components/common/ErrorBoundary';
-import { setWarp, setLoading, setError, setSuccess, clearError } from './store/warpSlice';
+import { setError, setSuccess, clearError } from './store/warpSlice';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { Converter } from './components/Converter/Converter';
 import AOS from 'aos';
-// import 'aos/dist/aos.css';
-// import { useElectron } from './hooks/useElectron';
-// import { useFileSystem } from './hooks/useFileSystem';
-// import { useHotkeys } from './hooks/useHotkeys';
 
 /**
  * Main Application Component
@@ -33,7 +29,7 @@ const App = () => {
     const navigate = useNavigate();
     const theme = useTheme();
 
-    const { warpdata, loading, error, successMessage } = useSelector((state) => state.warp);
+    const { loading, error, successMessage } = useSelector((state) => state.warp);
     const [showWelcome, setShowWelcome] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
 
