@@ -830,6 +830,17 @@ export const AudioEffects = ({ effects = [], isOpen, onToggle, color = 'green' }
         normalize: string
         compressor: string
         equalizer: string
+        reverb: string
+        echo: string
+        high: string
+        whisper: string
+        demonic: string
+        hacker: string
+        lowpass: string
+        highpass: string
+        distortion: string
+        denoise: string
+        chipmunk: string
     }
 
     const effectLabels: effectLabelType = {
