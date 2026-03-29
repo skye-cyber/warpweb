@@ -12,7 +12,7 @@ from warpapp.models.tasks import TaskFilter, TaskSummary
 from warpapp.models.responses import TaskStatusResponse
 from warpapp.utils.logger import logger
 
-router = APIRouter(prefix="/api/v1/tasks", tags=["tasks"])
+router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.get("", response_model=List[TaskSummary])

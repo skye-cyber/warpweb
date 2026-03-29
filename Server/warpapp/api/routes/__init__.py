@@ -9,6 +9,7 @@ from warpapp.api.routes.system import router as system_router
 from warpapp.api.routes.tasks import router as tasks_router
 from warpapp.api.routes.formats import router as formats_router
 from warpapp.api.routes.websocket import router as websocket_router
+from warpapp.api.routes.upload import router as upload_router
 
 __all__ = [
     'conversion_router',
@@ -21,5 +22,6 @@ __all__ = [
     'system_router',
     'tasks_router',
     'formats_router',
+    'upload_router',
     'websocket_router'
 ]

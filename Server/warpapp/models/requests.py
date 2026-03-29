@@ -217,7 +217,7 @@ class ImageResizeRequest(BaseModel):
         return v
 
 
-class PDFJoinRequest(BaseModel):
+class PDFMergeRequest(BaseModel):
     """Request model for joining PDFs"""
 
     pdf_paths: List[str] = Field(..., description="PDF files to join", min_items=2)

@@ -11,7 +11,7 @@ from warpapp.api.dependencies import get_conversion_service, get_task_manager, g
 from warpapp.api.dependencies import get_progress_service  # , get_websocket_manager
 from warpapp.utils.logger import logger
 
-router = APIRouter(prefix="/api/v1/conversion", tags=["conversion"])
+router = APIRouter(prefix="/conversion", tags=["conversion"])
 
 
 @router.post("/submit", response_model=TaskResponse)
@@ -49,11 +49,11 @@ async def submit_conversion(
                 )
 
             # Validate target format
-            from_format = file_handler.get_file_info(request.input_paths[0])[
-                "extension"
-            ]
+            # from_format = file_handler.get_file_info(request.input_paths[0])[
+            #     "extension"
+            # ]
             valid, message = conversion_service.validate_conversion(
-                from_format, f".{request.target_format}"
+                request
             )
             if not valid:
                 raise HTTPException(status_code=400, detail=message)
@@ -85,6 +85,7 @@ async def submit_conversion(
     except HTTPException:
         raise
     except Exception as e:
+        raise
         logger.error(f"Error submitting conversion: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 

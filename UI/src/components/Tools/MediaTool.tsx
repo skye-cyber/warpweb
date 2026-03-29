@@ -1,4 +1,4 @@
-/// <referenc="../../../types/*"
+// Updated MediaTool component with blob upload handling
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, Variants } from 'framer-motion';
@@ -9,7 +9,9 @@ import {
     RefreshCw,
     Sliders,
     ArrowRight,
-    Sparkles
+    Sparkles,
+    CheckCircle,
+    AlertCircle
 } from 'lucide-react';
 import { TOOLS } from '../../config/ToolSchema';
 import { SettingsPanel, AdvancedOptions, AudioEffects } from './SettingsPanel';
@@ -22,7 +24,8 @@ import {
     audioService,
     videoService,
     imageService,
-    documentService
+    documentService,
+    blobUploadService
 } from '../../services/api';
 import { categoryIcons } from './utils/utils';
 import type {
@@ -39,7 +42,7 @@ import type {
 import { TaskPriority } from '../../services/types/api.d';
 import { colorSystemType } from './utils/utils';
 import { toolToOperationMap } from '../../config/ToolSchema';
-// import { categoryServiceMap } from '../../config/ToolSchema';
+import { FileUploadStatus } from '../../services/types/api';
 
 
 // Main MediaTool Component
@@ -50,10 +53,13 @@ export const MediaTool = () => {
 
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
+    const [fileUploadStatuses, setFileUploadStatuses] = useState<Map<string, FileUploadStatus>>(new Map());
     const [isDragging, setIsDragging] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [progress, setProgress] = useState<number>(0);
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
+    const [taskId, setTaskId] = useState<string | null>(null);
 
     if (!config) return null;
 
@@ -69,19 +75,14 @@ export const MediaTool = () => {
         settings = [],
         effects = [],
         advanced = [],
-        //         icon,
-        //         submitIcon
     } = config;
 
     const colors = colorSystem[color as keyof colorSystemType] || colorSystem.green;
     const CategoryIcon = categoryIcons[category as keyof categoryIconType] || FileText;
 
-    // Prepare form data for submission
-    const prepareRequestData = (formData: FormData): any => {
+    // Prepare form data for submission (modified to work with file paths)
+    const prepareRequestData = async (uploadedPaths: string[], formData: FormData): Promise<any> => {
         const operation = toolToOperationMap[toolId];
-        const inputPaths = files.map((file: any) => file.path || URL.createObjectURL(file));
-        //         const settings = formData
-        console.log(files)
 
         // Get settings from form
         const settingsData: Record<string, any> = {};
@@ -113,7 +114,7 @@ export const MediaTool = () => {
         // Base request structure
         const baseRequest: ConversionRequest = {
             operation,
-            input_paths: inputPaths,
+            input_paths: uploadedPaths, // Use uploaded server paths instead of blob URLs
             options: {
                 ...settingsData,
                 ...advancedData,
@@ -121,19 +122,18 @@ export const MediaTool = () => {
             }
         };
 
-        console.log(toolId)
         // Handle specific operations
         switch (toolId) {
             case 'merge_pdf':
                 return {
-                    pdf_paths: inputPaths,
+                    pdf_paths: uploadedPaths,
                     output_path: formData.get('output_path') || null,
                     order: formData.get('order') || 'AAB'
                 } as PDFJoinRequest;
 
             case 'extract_pdf_pages':
                 return {
-                    pdf_path: inputPaths[0],
+                    pdf_path: uploadedPaths[0],
                     start_page: formData.get('start_page') ? Number(formData.get('start_page')) : 1,
                     stop_page: formData.get('stop_page') ? Number(formData.get('stop_page')) : -1,
                     output_path: formData.get('output_path') || null
@@ -141,21 +141,21 @@ export const MediaTool = () => {
 
             case 'pdf-extract-images':
                 return {
-                    pdf_path: inputPaths[0],
+                    pdf_path: uploadedPaths[0],
                     output_dir: formData.get('output_dir') || null,
                     image_size: formData.get('image_size') || null
                 };
 
             case 'scan_pdf':
                 return {
-                    pdf_path: inputPaths[0],
+                    pdf_path: uploadedPaths[0],
                     mode: formData.get('mode') || 'standard',
                     separator: formData.get('separator') || '\n'
                 };
 
             case 'audio_join':
                 return {
-                    input_paths: inputPaths,
+                    input_paths: uploadedPaths,
                     output_path: formData.get('output_path') || null
                 } as AudioJoinRequest;
 
@@ -167,11 +167,15 @@ export const MediaTool = () => {
                 };
 
             case 'audio-effects':
-                return effectsData;
+                return {
+                    audio_path: uploadedPaths[0],
+                    effects: effectsData,
+                    output_path: formData.get('output_path') || null
+                };
 
             case 'resize_image':
                 return {
-                    image_path: inputPaths[0],
+                    image_path: uploadedPaths[0],
                     target_size: formData.get('target_size') || '50%',
                     output_format: formData.get('output_format') || null,
                     output_path: formData.get('output_path') || null
@@ -179,7 +183,7 @@ export const MediaTool = () => {
 
             case 'ocr':
                 return {
-                    image_paths: inputPaths,
+                    image_paths: uploadedPaths,
                     language: formData.get('language') || 'eng',
                     separator: formData.get('separator') || '\n',
                     output_path: formData.get('output_path') || null
@@ -187,7 +191,7 @@ export const MediaTool = () => {
 
             case 'image2pdf':
                 return {
-                    image_paths: inputPaths,
+                    image_paths: uploadedPaths,
                     output_path: formData.get('output_path') || null,
                     sort: formData.get('sort') === 'true',
                     walk: formData.get('walk') === 'true'
@@ -195,13 +199,13 @@ export const MediaTool = () => {
 
             case 'image2word':
                 return {
-                    image_paths: inputPaths,
+                    image_paths: uploadedPaths,
                     output_path: formData.get('output_path') || null
                 };
 
             case 'text2word':
                 return {
-                    text_path: inputPaths[0],
+                    text_path: uploadedPaths[0],
                     font_size: formData.get('font_size') ? Number(formData.get('font_size')) : 12,
                     font_name: formData.get('font_name') || 'Times New Roman',
                     output_path: formData.get('output_path') || null
@@ -209,14 +213,14 @@ export const MediaTool = () => {
 
             case 'analyze_video':
                 return {
-                    video_path: inputPaths[0],
+                    video_path: uploadedPaths[0],
                     analyze_audio: formData.get('analyze_audio') === 'true',
                     extract_metadata: formData.get('extract_metadata') !== 'false'
                 } as VideoAnalysisRequest;
 
             case 'video-extract-frames':
                 return {
-                    video_path: inputPaths[0],
+                    video_path: uploadedPaths[0],
                     frame_rate: formData.get('frame_rate') ? Number(formData.get('frame_rate')) : 1,
                     output_dir: formData.get('output_dir') || null,
                     format: formData.get('format') || 'jpg'
@@ -224,148 +228,63 @@ export const MediaTool = () => {
 
             case 'compress_video':
                 return {
-                    video_path: inputPaths[0],
+                    video_path: uploadedPaths[0],
                     target_size: formData.get('target_size') || null,
                     quality: formData.get('quality') ? Number(formData.get('quality')) : 23,
                     output_path: formData.get('output_path') || null
                 };
 
             default:
-                // For generic conversions (convert, etc.)
+                // For generic conversions
                 baseRequest.target_format = formData.get('target_format')?.toString() || null;
                 baseRequest.threads = formData.get('threads') ? Number(formData.get('threads')) : 3;
-                //                 baseRequest.no_resume = formData.get('no_resume') === 'true';
                 return baseRequest;
         }
     };
-
-    interface ErrorItem {
-        lock: Array<string | number | any>
-        msg: string
-        type: string
-    }
-
-    type ErrorType = Array<ErrorItem>
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsProcessing(true);
         setError(null);
         setProgress(0);
+        setUploadProgress(0);
+        setTaskId(null);
 
         try {
             const formData = new FormData(e.currentTarget);
-            const requestData = prepareRequestData(formData);
+
+            // Step 1: Upload files to server and get file paths
+            console.log('Uploading files to server...');
+            const uploadedPaths = await uploadFilesWithProgress(files);
+            console.log('Files uploaded:', uploadedPaths);
+
+            // Step 2: Prepare request with uploaded paths
+            const requestData = await prepareRequestData(uploadedPaths, formData);
             const priority = (formData.get('priority') as TaskPriorityType) || TaskPriority.MEDIUM;
 
-            console.log('Submitting to API:', {
-                // toolId,
-                // category,
-                // operation: toolToOperationMap[toolId],
-                requestData
-            });
-
+            console.log('Submitting conversion request:', requestData);
+            console.log(toolId, category)
+            // Step 3: Submit conversion request
             let response;
 
             // Route to appropriate service based on category and operation
             switch (category as string) {
-                case 'pdf':
-                    if (toolId === 'pdf-join') {
-                        response = await pdfService.join(requestData, priority);
-                    } else if (toolId === 'pdf-extract') {
-                        response = await pdfService.extractPages(requestData, priority);
-                    } else if (toolId === 'pdf-extract-images') {
-                        const { pdf_path, output_dir, image_size } = requestData;
-                        response = await pdfService.extractImages(pdf_path, output_dir, image_size, priority);
-                    } else if (toolId === 'pdf-scan') {
-                        const { pdf_path, mode, separator } = requestData;
-                        response = await pdfService.scan(pdf_path, mode, separator, priority);
-                    } else if (toolId === 'pdf-to-long-image') {
-                        const { pdf_path, output_path } = requestData;
-                        response = await pdfService.toLongImage(pdf_path, output_path, priority);
-                    } else {
-                        // Use conversion service for generic PDF operations
-                        response = await conversionService.submit(requestData, priority);
-                    }
-                    break;
-
+                // case 'pdf':
+                //     response = await handlePdfOperation(toolId, requestData, priority);
+                //     break;
                 case 'audios':
-                    if (toolId === 'audio-convert') {
-                        response = await audioService.convert(requestData, priority);
-                    } else if (toolId === 'audio-extract') {
-                        const { video_path, output_format, output_path } = requestData;
-                        response = await audioService.extractFromVideo(video_path, output_format, output_path, priority);
-                    } else if (toolId === 'audio-join') {
-                        response = await audioService.join(requestData, priority);
-                    } else if (toolId === 'audio-record') {
-                        const { duration, output_format, output_path } = requestData;
-                        response = await audioService.record(duration, output_format, output_path, priority);
-                    } else if (toolId === 'audio-effects') {
-                        const { audio_path, effects, output_path } = requestData;
-                        response = await audioService.applyEffects(audio_path, effects, output_path, priority);
-                    } else {
-                        response = await conversionService.submit(requestData, priority);
-                    }
+                    response = await handleAudioOperation(toolId, requestData, priority);
                     break;
-
                 case 'videos':
-                    if (toolId === 'video-convert') {
-                        response = await videoService.convert(requestData, priority);
-                    } else if (toolId === 'video-analyze') {
-                        response = await videoService.analyze(requestData, priority);
-                    } else if (toolId === 'video-extract-frames') {
-                        const { video_path, frame_rate, output_dir, format } = requestData;
-                        response = await videoService.extractFrames(video_path, frame_rate, output_dir, format, priority);
-                    } else if (toolId === 'video-compress') {
-                        const { video_path, target_size, quality, output_path } = requestData;
-                        response = await videoService.compress(video_path, target_size, quality, output_path, priority);
-                    } else {
-                        response = await conversionService.submit(requestData, priority);
-                    }
+                    response = await handleVideoOperation(toolId, requestData, priority);
                     break;
-
                 case 'images':
-                    if (toolId === 'image-convert') {
-                        response = await imageService.convert(requestData, priority);
-                    } else if (toolId === 'image-resize') {
-                        response = await imageService.resize(requestData, priority);
-                    } else if (toolId === 'image-to-pdf') {
-                        const { image_paths, output_path, sort, walk } = requestData;
-                        response = await imageService.toPdf(image_paths, output_path, sort, walk, priority);
-                    } else if (toolId === 'image-to-word') {
-                        const { image_paths, output_path } = requestData;
-                        response = await imageService.toWord(image_paths, output_path, priority);
-                    } else if (toolId === 'image-grayscale') {
-                        const { image_paths, output_dir } = requestData;
-                        response = await imageService.toGrayscale(image_paths, output_dir, priority);
-                    } else if (toolId === 'image-ocr') {
-                        response = await imageService.ocr(requestData, priority);
-                    } else {
-                        response = await conversionService.submit(requestData, priority);
-                    }
+                    response = await handleImageOperation(toolId, requestData, priority);
                     break;
-
                 case 'documents':
-                    if (toolId === 'document-convert') {
-                        response = await documentService.convert(requestData, priority);
-                    } else if (toolId === 'document-to-image') {
-                        const { document_path, output_format, output_dir } = requestData;
-                        response = await documentService.toImage(document_path, output_format, output_dir, priority);
-                    } else if (toolId === 'html-to-word') {
-                        const { html_paths, output_dir } = requestData;
-                        response = await documentService.htmlToWord(html_paths, output_dir, priority);
-                    } else if (toolId === 'text-to-word') {
-                        response = await documentService.textToWord(requestData, priority);
-                    } else if (toolId === 'markdown-to-word') {
-                        const { markdown_path, output_path } = requestData;
-                        response = await documentService.markdownToWord(markdown_path, output_path, priority);
-                    } else {
-                        response = await conversionService.submit(requestData, priority);
-                    }
+                    response = await handleDocumentOperation(toolId, requestData, priority);
                     break;
-
                 default:
-                    // Use generic conversion service
                     response = await conversionService.submit(requestData, priority);
             }
 
@@ -373,33 +292,162 @@ export const MediaTool = () => {
 
             // Start polling for task status if task_id is returned
             if (response.data?.task_id) {
+                setTaskId(response.data.task_id);
                 pollTaskStatus(response.data.task_id);
+                setProgress(50); // After upload, conversion started
+            } else {
+                setProgress(100);
             }
 
-            // Clear form on success
-            clearForm();
-
-            // Show success message (you can add a toast notification here)
-            alert('Task submitted successfully! Task ID: ' + response.data.task_id);
+            // Show success message
+            alert('Task submitted successfully! ' + (response.data?.task_id ? `Task ID: ${response.data.task_id}` : ''));
 
         } catch (err: any) {
-            const errors: ErrorType = err.response?.data?.detail
-            // console.error('Submission error:', err);
-            setError(JSON.stringify(errors[0].msg || err.response?.data?.detail) || err.message || 'Failed to submit task');
-
-            if (errors) {
-                // Show error message
-                errors.forEach((err: any) => {
-                    console.log(err)
-                });
-            }
+            console.error('Submission error:', err);
+            setError(err.message || 'Failed to submit task');
         } finally {
             setIsProcessing(false);
         }
     };
 
+    // Helper function to upload files with progress tracking
+    const uploadFilesWithProgress = async (filesToUpload: File[]): Promise<string[]> => {
+        const formData = new FormData();
+        filesToUpload.forEach(file => {
+            formData.append('files', file);
+        });
+
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    console.log("Progress:", e.loaded)
+                    const percent = (e.loaded / e.total) * 100;
+                    setUploadProgress(percent);
+                    setProgress(percent * 0.5); // Upload is first 50% of total progress
+                }
+            });
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    const result = JSON.parse(xhr.responseText);
+                    if (result.success) {
+                        console.log(result)
+                        setUploadProgress(100);
+                        resolve(result.files);
+                    } else {
+                        reject(new Error(result.error || 'Upload failed'));
+                    }
+                } else {
+                    reject(new Error(`Upload failed: ${xhr.status}`));
+                }
+            };
+
+            xhr.onerror = () => reject(new Error('Network error during upload'));
+
+            blobUploadService.open(xhr, formData)
+            // xhr.open('POST', '/api/v1/upload');
+            // xhr.send(formData);
+        });
+    };
+
+    // Operation handlers
+    const handlePdfOperation = async (toolId: string, requestData: any, priority: TaskPriorityType) => {
+        if (toolId === 'merge_pdf') {
+            return await pdfService.join(requestData, priority);
+        } else if (toolId === 'pdf-extract') {
+            return await pdfService.extractPages(requestData, priority);
+        } else if (toolId === 'pdf-extract-images') {
+            return await pdfService.extractImages(requestData.pdf_path, requestData.output_dir, requestData.image_size, priority);
+        } else if (toolId === 'pdf-scan') {
+            return await pdfService.scan(requestData.pdf_path, requestData.mode, requestData.separator, priority);
+        } else if (toolId === 'pdf-to-long-image') {
+            return await pdfService.toLongImage(requestData.pdf_path, requestData.output_path, priority);
+        } else {
+            return await conversionService.submit(requestData, priority);
+        }
+    };
+
+    const handleAudioOperation = async (toolId: string, requestData: any, priority: TaskPriorityType) => {
+        if (toolId === 'audio-convert') {
+            return await audioService.convert(requestData, priority);
+        } else if (toolId === 'audio-extract') {
+            return await audioService.extractFromVideo(requestData.video_path, requestData.output_format, requestData.output_path, priority);
+        } else if (toolId === 'audio-join') {
+            return await audioService.join(requestData, priority);
+        } else if (toolId === 'audio-record') {
+            return await audioService.record(requestData.duration, requestData.output_format, requestData.output_path, priority);
+        } else if (toolId === 'audio-effects') {
+            return await audioService.applyEffects(requestData.audio_path, requestData.effects, requestData.output_path, priority);
+        } else {
+            return await conversionService.submit(requestData, priority);
+        }
+    };
+
+    const handleVideoOperation = async (toolId: string, requestData: any, priority: TaskPriorityType) => {
+        if (toolId === 'video-convert') {
+            return await videoService.convert(requestData, priority);
+        } else if (toolId === 'video-analyze') {
+            return await videoService.analyze(requestData, priority);
+        } else if (toolId === 'video-extract-frames') {
+            return await videoService.extractFrames(requestData.video_path, requestData.frame_rate, requestData.output_dir, requestData.format, priority);
+        } else if (toolId === 'video-compress') {
+            return await videoService.compress(requestData.video_path, requestData.target_size, requestData.quality, requestData.output_path, priority);
+        } else {
+            return await conversionService.submit(requestData, priority);
+        }
+    };
+
+    const handleImageOperation = async (toolId: string, requestData: any, priority: TaskPriorityType) => {
+        if (toolId === 'image-convert') {
+            return await imageService.convert(requestData, priority);
+        } else if (toolId === 'merge_pdf') {
+            return await pdfService.join(requestData, priority);
+        } else if (toolId === 'image-resize') {
+            return await imageService.resize(requestData, priority);
+        } else if (toolId === 'image-to-pdf') {
+            return await imageService.toPdf(requestData.image_paths, requestData.output_path, requestData.sort, requestData.walk, priority);
+        } else if (toolId === 'image-to-word') {
+            return await imageService.toWord(requestData.image_paths, requestData.output_path, priority);
+        } else if (toolId === 'image-grayscale') {
+            return await imageService.toGrayscale(requestData.image_paths, requestData.output_dir, priority);
+        } else if (toolId === 'image-ocr') {
+            return await imageService.ocr(requestData, priority);
+        } else {
+            return await conversionService.submit(requestData, priority);
+        }
+    };
+
+    const handleDocumentOperation = async (toolId: string, requestData: any, priority: TaskPriorityType) => {
+        if (toolId === 'document-convert') {
+            return await documentService.convert(requestData, priority);
+        } else if (toolId === 'document-to-image') {
+            return await documentService.toImage(requestData.document_path, requestData.output_format, requestData.output_dir, priority);
+        } else if (toolId === 'merge_pdf') {
+            return await pdfService.join(requestData, priority);
+        } else if (toolId === 'pdf-extract') {
+            return await pdfService.extractPages(requestData, priority);
+        } else if (toolId === 'pdf-extract-images') {
+            return await pdfService.extractImages(requestData.pdf_path, requestData.output_dir, requestData.image_size, priority);
+        } else if (toolId === 'pdf-scan') {
+            return await pdfService.scan(requestData.pdf_path, requestData.mode, requestData.separator, priority);
+        } else if (toolId === 'pdf-to-long-image') {
+            return await pdfService.toLongImage(requestData.pdf_path, requestData.output_path, priority);
+        } else if (toolId === 'pdf-to-long-image') {
+            return await pdfService.toLongImage(requestData.pdf_path, requestData.output_path, priority);
+        } else if (toolId === 'html-to-word') {
+            return await documentService.htmlToWord(requestData.html_paths, requestData.output_dir, priority);
+        } else if (toolId === 'text-to-word') {
+            return await documentService.textToWord(requestData, priority);
+        } else if (toolId === 'markdown-to-word') {
+            return await documentService.markdownToWord(requestData.markdown_path, requestData.output_path, priority);
+        } else {
+            return await conversionService.submit(requestData, priority);
+        }
+    };
+
     const pollTaskStatus = async (taskId: string) => {
-        // Import tasks service dynamically to avoid circular dependencies
         const { tasksService } = await import('../../services/api');
 
         const interval = setInterval(async () => {
@@ -407,16 +455,19 @@ export const MediaTool = () => {
                 const response = await tasksService.getStatus(taskId);
                 const status = response.data;
 
-                setProgress(status.progress);
+                // Calculate overall progress (50% for upload, 50% for conversion)
+                const conversionProgress = (status.progress || 0) * 0.5;
+                const overallProgress = 50 + conversionProgress;
+                setProgress(overallProgress);
 
                 if (status.status === 'completed') {
                     clearInterval(interval);
                     setProgress(100);
-                    alert('Task completed successfully!');
+                    console.log('Task completed successfully!');
                 } else if (status.status === 'failed') {
                     clearInterval(interval);
                     setError(status.error || 'Task failed');
-                    alert('Task failed: ' + (status.error || 'Unknown error'));
+                    console.log('Task failed: ' + (status.error || 'Unknown error'));
                 }
             } catch (err) {
                 console.error('Error polling task status:', err);
@@ -429,23 +480,44 @@ export const MediaTool = () => {
         const newFiles = Array.from(e.target.files || []);
         setFiles(prev => [...prev, ...newFiles]);
         setError(null);
-        console.log(files)
+
+        // Initialize upload statuses for new files
+        const newStatuses = new Map(fileUploadStatuses);
+        newFiles.forEach(file => {
+            newStatuses.set(file.name, {
+                id: `${Date.now()}_${file.name}`,
+                file,
+                progress: 0,
+                status: 'pending'
+            });
+        });
+        setFileUploadStatuses(newStatuses);
     };
 
     const handleRemoveFile = (index?: number) => {
         if (index === undefined || index === -1) {
             setFiles([]);
+            setFileUploadStatuses(new Map());
         } else {
+            const fileToRemove = files[index];
             setFiles(prev => prev.filter((_, i) => i !== index));
+            setFileUploadStatuses(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(fileToRemove.name);
+                return newMap;
+            });
         }
         setError(null);
     };
 
     const clearForm = () => {
         setFiles([]);
+        setFileUploadStatuses(new Map());
         setShowAdvanced(false);
         setError(null);
         setProgress(0);
+        setUploadProgress(0);
+        setTaskId(null);
     };
 
     const getUploadLabel = () => {
@@ -526,6 +598,28 @@ export const MediaTool = () => {
                             color={color as keyof colorSystemType}
                             accepts={accepts as string}
                         />
+
+                        {/* File upload statuses */}
+                        {fileUploadStatuses.size > 0 && (
+                            <div className="mt-3 space-y-2">
+                                {Array.from(fileUploadStatuses.values()).map(status => (
+                                    <div key={status.id} className="flex items-center justify-between text-sm">
+                                        <span className="text-gray-600 dark:text-gray-400 truncate flex-1">
+                                            {status.file.name}
+                                        </span>
+                                        {status.status === 'uploading' && (
+                                            <span className="text-blue-500">Uploading...</span>
+                                        )}
+                                        {status.status === 'completed' && (
+                                            <CheckCircle className="w-4 h-4 text-green-500" />
+                                        )}
+                                        {status.status === 'failed' && (
+                                            <AlertCircle className="w-4 h-4 text-red-500" />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </motion.div>
 
                     {/* Settings Section */}
@@ -578,15 +672,21 @@ export const MediaTool = () => {
                     )}
 
                     {/* Progress Display */}
-                    {isProcessing && progress > 0 && (
+                    {(isProcessing || progress > 0) && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             className="space-y-2"
                         >
                             <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                                <span>Processing...</span>
-                                <span>{progress}%</span>
+                                <span>
+                                    {uploadProgress > 0 && uploadProgress < 100
+                                        ? `Uploading... ${Math.round(uploadProgress)}%`
+                                        : taskId
+                                            ? `Converting... ${Math.round(progress)}%`
+                                            : 'Processing...'}
+                                </span>
+                                <span>{Math.round(progress)}%</span>
                             </div>
                             <div className="w-full bg-gray-200 dark:bg-cyber-700 rounded-full h-2 overflow-hidden">
                                 <motion.div
@@ -596,6 +696,11 @@ export const MediaTool = () => {
                                     transition={{ duration: 0.3 }}
                                 />
                             </div>
+                            {taskId && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                                    Task ID: {taskId}
+                                </p>
+                            )}
                         </motion.div>
                     )}
 
@@ -620,7 +725,7 @@ export const MediaTool = () => {
                             {isProcessing ? (
                                 <>
                                     <RefreshCw className="w-5 h-5 animate-spin" />
-                                    <span>Processing...</span>
+                                    <span>{uploadProgress > 0 && uploadProgress < 100 ? 'Uploading...' : 'Processing...'}</span>
                                 </>
                             ) : (
                                 <>

@@ -5,7 +5,7 @@ from warpapp.api.dependencies import get_format_service
 from warpapp.utils.logger import logger
 
 
-router = APIRouter(prefix="/api/v1/formats", tags=["formats"])
+router = APIRouter(prefix="/formats", tags=["formats"])
 
 
 @router.get("")
